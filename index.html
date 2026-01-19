@@ -3,89 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Tycoon Premium</title>
+    <title>AI Tycoon: Final Edition</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap');
         
+        :root { --neon-blue: #00f2ff; --neon-purple: #7000ff; --glass: rgba(15, 23, 42, 0.7); }
+
         body { 
-            background: #0d1117; color: white; font-family: 'Segoe UI', sans-serif; 
+            background: #05070a; color: white; font-family: 'Rajdhani', sans-serif; 
             margin: 0; display: flex; flex-direction: column; align-items: center; 
             height: 100vh; overflow: hidden;
         }
 
         /* Üst Bilgi Kutuları */
-        #top-stats { 
-            display: flex; justify-content: space-between; width: 90%; margin-top: 20px; gap: 10px;
-        }
+        #top-stats { display: flex; justify-content: space-between; width: 92%; margin-top: 15px; gap: 10px; }
         .stat-card {
-            flex: 1; background: rgba(25, 31, 45, 0.8); border: 1px solid #00f2ff;
-            border-radius: 15px; padding: 10px; text-align: center;
+            flex: 1; background: var(--glass); border: 1px solid var(--neon-blue);
+            border-radius: 12px; padding: 10px; text-align: center; backdrop-filter: blur(10px);
             box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
         }
-        .stat-card.purple { border-color: #7000ff; box-shadow: 0 0 15px rgba(112, 0, 255, 0.1); }
-        .stat-label { font-size: 10px; color: #8b949e; display: block; margin-bottom: 5px; font-weight: bold; }
+        .stat-card.purple { border-color: var(--neon-purple); box-shadow: 0 0 15px rgba(112, 0, 255, 0.1); }
+        .stat-label { font-size: 10px; color: #8b949e; display: block; margin-bottom: 4px; font-weight: bold; }
         .stat-value { font-family: 'Orbitron'; font-size: 14px; color: #fff; }
 
-        /* Ana Alan */
-        #main-area { flex: 1; display: flex; flex-direction: column; align-items: center; margin-top: 20px; width: 100%; }
-        
-        #rank-title { font-family: 'Orbitron'; font-size: 14px; color: #fff; margin-bottom: 5px; letter-spacing: 1px; }
-        #progress-line { width: 60%; height: 6px; background: #1a2236; border-radius: 3px; margin-bottom: 15px; overflow: hidden; }
-        #progress-fill { width: 0%; height: 100%; background: #00f2ff; box-shadow: 0 0 10px #00f2ff; transition: width 0.3s; }
+        /* Ana Gövde */
+        #main-display { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+        #rank-text { font-family: 'Orbitron'; font-size: 15px; letter-spacing: 2px; margin-bottom: 10px; }
+        #score-main { font-family: 'Orbitron'; font-size: 44px; font-weight: bold; color: #fff; margin-bottom: 25px; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        #score-main span { color: var(--neon-blue); font-size: 20px; margin-left: 5px; }
 
-        #score-display { font-family: 'Orbitron'; font-size: 38px; font-weight: bold; color: #fff; margin-bottom: 20px; }
-        #score-display span { color: #00f2ff; font-size: 20px; }
-
-        /* Parlayan Beyin Halkası */
-        #ai-hub {
-            width: 180px; height: 180px; border-radius: 50%;
-            background: radial-gradient(circle, #1a103d 0%, #0d1117 100%);
-            border: 2px solid #7000ff; display: flex; align-items: center; justify-content: center;
-            font-size: 80px; cursor: pointer; position: relative;
-            box-shadow: 0 0 40px rgba(112, 0, 255, 0.5);
-            transition: 0.1s;
-        }
-        #ai-hub::before {
-            content: ''; position: absolute; width: 110%; height: 110%;
-            border-radius: 50%; border: 1px solid rgba(112, 0, 255, 0.3);
+        /* Parlayan Beyin ve Halkası */
+        #brain-container { position: relative; width: 210px; height: 210px; display: flex; align-items: center; justify-content: center; }
+        #brain-glow { 
+            position: absolute; width: 100%; height: 100%; border-radius: 50%; 
+            border: 2px solid var(--neon-purple); box-shadow: 0 0 40px var(--neon-purple);
             animation: pulse 2s infinite;
         }
-        #ai-hub:active { transform: scale(0.95); }
+        #brain-btn { 
+            width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, #1a103d, #05070a);
+            display: flex; align-items: center; justify-content: center; font-size: 90px;
+            cursor: pointer; z-index: 2; transition: transform 0.05s; border: 1px solid rgba(255,255,255,0.1);
+        }
+        #brain-btn:active { transform: scale(0.94); }
 
-        /* Alt Kartlar Alanı */
-        #bottom-scroll {
-            width: 100%; overflow-x: auto; display: flex; gap: 15px; padding: 20px;
-            background: rgba(13, 17, 23, 0.9); border-top: 1px solid #1a2236;
+        /* Kombo Bildirimi */
+        #combo-info { margin-top: 15px; font-size: 12px; color: gold; font-weight: bold; animation: blink 1s infinite; }
+
+        /* Alt Kartlar Bölümü */
+        #cards-section {
+            width: 100%; background: rgba(10, 15, 25, 0.95); padding: 15px 0;
+            border-top: 1px solid #1a2236; display: flex; overflow-x: auto; gap: 15px; padding-left: 15px;
         }
-        .item-card {
-            min-width: 130px; background: #1c2128; border-radius: 15px; padding: 10px;
-            border: 1px solid #30363d; text-align: center; position: relative;
+        .card {
+            min-width: 130px; background: #161b22; border: 1px solid #30363d;
+            border-radius: 15px; padding: 12px; text-align: center; position: relative;
         }
-        .item-card img { width: 50px; height: 50px; margin-bottom: 10px; filter: drop-shadow(0 0 5px #00f2ff); }
-        .item-name { font-size: 11px; font-weight: bold; display: block; margin-bottom: 5px; }
-        .item-btn { 
-            background: #00f2ff; color: #000; border: none; width: 100%; 
-            padding: 8px; border-radius: 8px; font-size: 10px; font-weight: bold; cursor: pointer;
+        .card-emoji { font-size: 30px; margin-bottom: 8px; display: block; filter: drop-shadow(0 0 5px var(--neon-blue)); }
+        .card-name { font-size: 12px; font-weight: bold; margin-bottom: 4px; display: block; }
+        .card-price { font-size: 11px; color: #8b949e; margin-bottom: 10px; display: block; }
+        .buy-btn { 
+            background: var(--neon-blue); color: #000; border: none; width: 100%; 
+            padding: 8px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;
         }
-        .item-btn:disabled { background: #334155; color: #8b949e; }
-        
-        /* Kilitli Kart Perdesi */
-        .lock-overlay {
+        .buy-btn:disabled { background: #1e293b; color: #4b5563; }
+        .locked-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); border-radius: 15px; display: flex;
+            background: rgba(0,0,0,0.8); border-radius: 15px; display: flex;
             align-items: center; justify-content: center; font-size: 10px; color: #ff4c4c; font-weight: bold;
         }
 
-        /* Navigasyon */
-        #navbar {
-            width: 100%; background: #0d1117; display: flex; 
-            justify-content: space-around; padding: 15px 0; border-top: 1px solid #1a2236;
-        }
-        .nav-link { font-size: 10px; color: #8b949e; text-align: center; text-decoration: none; cursor: pointer; }
-        .nav-link.active { color: #00f2ff; font-weight: bold; }
-
+        /* Animasyonlar */
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.2); opacity: 0; } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* Nav */
+        #navbar { width: 100%; display: flex; background: #05070a; border-top: 1px solid #1a2236; padding: 15px 0; }
+        .nav-item { flex: 1; text-align: center; color: #4b5563; font-size: 11px; font-weight: bold; }
+        .nav-item.active { color: var(--neon-blue); }
     </style>
 </head>
 <body>
@@ -97,134 +92,117 @@
         </div>
         <div class="stat-card purple">
             <span class="stat-label">⚙️ SAATLİK KAZANÇ</span>
-            <span class="stat-value" id="pps-val">0/s</span>
+            <span class="stat-value" id="pas-val">0/s</span>
         </div>
     </div>
 
-    <div id="main-area">
-        <div id="rank-title">STAJYER AI</div>
-        <div id="progress-line"><div id="progress-fill"></div></div>
-        
-        <div id="score-display"><span id="score">0</span> <span>MB</span></div>
+    <div id="main-display">
+        <div id="rank-text">GELİŞTİRİCİ AI</div>
+        <div id="score-main"><span id="score-val">0</span><span>MB</span></div>
 
-        <div id="ai-hub" onclick="handleTap(event)">🧠</div>
-        
-        <div id="combo-btn" onclick="claimDaily()" style="margin-top: 15px; color: gold; font-size: 12px; font-weight: bold; cursor: pointer; display: none;">
-            🎁 GÜNLÜK KOMBOYU AL!
+        <div id="brain-container">
+            <div id="brain-glow"></div>
+            <div id="brain-btn" onclick="handleTap(event)">🧠</div>
         </div>
+
+        <div id="combo-info" onclick="claimCombo()">⭐ GÜNLÜK KOMBO HAZIR!</div>
     </div>
 
-    <div id="bottom-scroll">
+    <div id="cards-section">
         </div>
 
     <div id="navbar">
-        <div class="nav-link">🃏 KARTLAR</div>
-        <div class="nav-link">🛠 MARKET</div>
-        <div class="nav-link active">🏠 ANA</div>
-        <div class="nav-link" onclick="tg.showAlert('Görevler Çok Yakında!')">🎁 GÖREVLER</div>
+        <div class="nav-item">MARKET</div>
+        <div class="nav-item active">ANA EKRAN</div>
+        <div class="nav-item">GÖREVLER</div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        let score = parseFloat(localStorage.getItem('ai_v21_score')) || 0;
-        let tap = parseInt(localStorage.getItem('ai_v21_tap')) || 1;
-        let passive = parseInt(localStorage.getItem('ai_v21_pas')) || 0;
-
-        const rankNames = [
-            { name: "STAJYER AI", min: 0 },
-            { name: "GELİŞTİRİCİ AI", min: 50000 },
-            { name: "SİSTEM MİMARI", min: 500000 },
-            { name: "CEO / SUPREME AI", min: 5000000 }
-        ];
+        let score = parseFloat(localStorage.getItem('ai_final_score')) || 0;
+        let tapPower = parseInt(localStorage.getItem('ai_final_tap')) || 1;
+        let passive = parseInt(localStorage.getItem('ai_final_pas')) || 0;
 
         const cards = [
-            { id: 1, name: "GPU V1", price: 500, type: "tap", bonus: 2, minLvl: 0, img: "https://cdn-icons-png.flaticon.com/512/3660/3660007.png" },
-            { id: 2, name: "SUNUCU ODASI", price: 2000, type: "pas", bonus: 10, minLvl: 0, img: "https://cdn-icons-png.flaticon.com/512/3067/3067866.png" },
-            { id: 3, name: "KUANTUM ÇİP", price: 25000, type: "tap", bonus: 20, minLvl: 50000, img: "https://cdn-icons-png.flaticon.com/512/5777/5777995.png" }
+            { id: 1, name: "GPU V1", emoji: "⚡", price: 500, type: "tap", bonus: 2, lvl: 1 },
+            { id: 2, name: "SUNUCU ODASI", emoji: "🖥", price: 2000, type: "pas", bonus: 10, lvl: 1 },
+            { id: 3, name: "KUANTUM ÇİP", emoji: "💠", price: 15000, type: "tap", bonus: 15, lvl: 2 },
+            { id: 4, name: "VERİ MERKEZİ", emoji: "🏢", price: 50000, type: "pas", bonus: 100, lvl: 2 }
         ];
 
-        function updateUI() {
-            document.getElementById('score').innerText = Math.floor(score).toLocaleString();
-            document.getElementById('tap-val').innerText = "+" + tap;
-            document.getElementById('pps-val').innerText = (passive * 3600).toLocaleString() + "/sa";
-            
-            // Rank ve Progress
-            let currentRank = rankNames[0];
-            rankNames.forEach(r => { if(score >= r.min) currentRank = r; });
-            document.getElementById('rank-title').innerText = currentRank.name;
-            
-            let nextRank = rankNames.find(r => r.min > score) || { min: score * 1.5 };
-            let prog = ((score - currentRank.min) / (nextRank.min - currentRank.min)) * 100;
-            document.getElementById('progress-fill').style.width = Math.min(prog, 100) + "%";
+        function getLvl() { return score < 50000 ? 1 : 2; }
 
-            // Günlük Kombo Kontrol
-            let lastClaim = localStorage.getItem('ai_v21_last_claim');
-            if(lastClaim !== new Date().toDateString()) {
-                document.getElementById('combo-btn').style.display = 'block';
-            } else {
-                document.getElementById('combo-btn').style.display = 'none';
+        function updateUI() {
+            document.getElementById('score-val').innerText = Math.floor(score).toLocaleString();
+            document.getElementById('tap-val').innerText = "+" + tapPower;
+            document.getElementById('pas-val').innerText = passive.toLocaleString() + "/s";
+            document.getElementById('rank-text').innerText = getLvl() === 1 ? "STAJYER AI" : "GELİŞTİRİCİ AI";
+            
+            const comboBtn = document.getElementById('combo-info');
+            const lastClaim = localStorage.getItem('combo_date');
+            if(lastClaim === new Date().toDateString()) {
+                comboBtn.innerText = "⭐ KOMBO ALINDI";
+                comboBtn.style.color = "#4b5563";
             }
 
             renderCards();
         }
 
         function renderCards() {
-            const container = document.getElementById('bottom-scroll');
+            const container = document.getElementById('cards-section');
+            const currentLvl = getLvl();
             container.innerHTML = '';
-            cards.forEach(card => {
-                const isLocked = score < card.minLvl;
+            
+            cards.forEach(c => {
+                const isLocked = currentLvl < c.lvl;
                 const cardDiv = document.createElement('div');
-                cardDiv.className = 'item-card';
+                cardDiv.className = 'card';
                 cardDiv.innerHTML = `
-                    <img src="${card.img}">
-                    <span class="item-name">${card.name}</span>
-                    <button class="item-btn" ${isLocked || score < card.price ? 'disabled' : ''} onclick="buy(${card.id})">
-                        ${card.price.toLocaleString()} MB
-                    </button>
-                    ${isLocked ? `<div class="lock-overlay">🔒 Lvl ${card.minLvl.toLocaleString()}</div>` : ''}
+                    <span class="card-emoji">${c.emoji}</span>
+                    <span class="card-name">${c.name}</span>
+                    <span class="card-price">${c.price.toLocaleString()} MB</span>
+                    <button class="buy-btn" ${isLocked || score < c.price ? 'disabled' : ''} onclick="buy(${c.id})">AL</button>
+                    ${isLocked ? `<div class="locked-overlay">🔒 Lvl ${c.lvl}</div>` : ''}
                 `;
                 container.appendChild(cardDiv);
             });
         }
 
         function handleTap(e) {
-            score += tap;
+            score += tapPower;
             tg.HapticFeedback.impactOccurred('medium');
-            updateUI();
-            save();
-        }
-
-        function buy(id) {
-            const card = cards.find(c => c.id === id);
-            if (score >= card.price) {
-                score -= card.price;
-                if (card.type === 'tap') tap += card.bonus;
-                else passive += (card.bonus / 3600);
-                updateUI(); save();
-                tg.showAlert("Yükseltme Alındı!");
-            }
-        }
-
-        function claimDaily() {
-            score += 100000;
-            localStorage.setItem('ai_v21_last_claim', new Date().toDateString());
-            tg.showAlert("Günlük Kombo: 100.000 MB Hesabına Eklendi!");
             updateUI(); save();
         }
 
-        function save() {
-            localStorage.setItem('ai_v21_score', score);
-            localStorage.setItem('ai_v21_tap', tap);
-            localStorage.setItem('ai_v21_pas', passive);
+        function buy(id) {
+            const c = cards.find(x => x.id === id);
+            if(score >= c.price) {
+                score -= c.price;
+                if(c.type === "tap") tapPower += c.bonus;
+                else passive += c.bonus;
+                updateUI(); save();
+            }
         }
 
-        setInterval(() => {
-            if (passive > 0) score += (passive / 10);
-            updateUI();
-        }, 100);
+        function claimCombo() {
+            const today = new Date().toDateString();
+            if(localStorage.getItem('combo_date') !== today) {
+                score += 50000;
+                localStorage.setItem('combo_date', today);
+                tg.showAlert("Günlük Kombo: 50.000 MB Kazandın!");
+                updateUI(); save();
+            }
+        }
 
+        function save() {
+            localStorage.setItem('ai_final_score', score);
+            localStorage.setItem('ai_final_tap', tapPower);
+            localStorage.setItem('ai_final_pas', passive);
+        }
+
+        setInterval(() => { if(passive > 0) { score += (passive / 10); updateUI(); } }, 100);
         updateUI();
     </script>
 </body>
