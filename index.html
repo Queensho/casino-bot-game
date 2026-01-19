@@ -3,153 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Tycoon | Global Ranking</title>
+    <title>AI Tycoon Ultimate</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap');
         :root { --neon-blue: #00f2ff; --neon-purple: #7000ff; --neon-gold: #ffcc00; --bg: #05070a; }
         body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; padding: 0; height: 100vh; overflow: hidden; }
         
-        /* Üst Statlar */
-        .header { display: flex; justify-content: space-around; padding: 12px; background: rgba(13, 17, 23, 0.9); border-bottom: 1px solid #1a2236; }
-        .stat-box { text-align: center; }
-        .stat-box small { font-size: 9px; color: #8b949e; display: block; }
-        .stat-box span { font-family: 'Orbitron'; font-size: 12px; color: var(--neon-blue); }
-
-        /* Sayfa Düzeni */
-        .page { display: none; flex-direction: column; align-items: center; height: 78vh; overflow-y: auto; padding: 20px; box-sizing: border-box; }
+        /* Layout */
+        .page { display: none; flex-direction: column; align-items: center; height: 82vh; overflow-y: auto; padding: 20px; box-sizing: border-box; }
         .active { display: flex; }
+        
+        /* Score */
+        #score-container { text-align: center; margin: 20px 0; }
+        #score { font-family: 'Orbitron'; font-size: 40px; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
 
-        /* Ana Ekran */
-        #score-display { font-family: 'Orbitron'; font-size: 42px; font-weight: bold; margin: 25px 0; text-shadow: 0 0 15px var(--neon-blue); }
-        .tap-area { width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, #1a103d, #05070a); border: 3px solid var(--neon-purple); display: flex; align-items: center; justify-content: center; font-size: 75px; cursor: pointer; box-shadow: 0 0 25px rgba(112, 0, 255, 0.3); transition: 0.1s; }
-        .tap-area:active { transform: scale(0.92); }
+        /* Brain Button */
+        .brain { width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, #1a103d, #05070a); border: 3px solid var(--neon-purple); display: flex; align-items: center; justify-content: center; font-size: 70px; cursor: pointer; box-shadow: 0 0 20px var(--neon-purple); transition: 0.1s; }
+        .brain:active { transform: scale(0.92); }
 
-        /* Kart Yapısı */
-        .card { width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid #1a2236; border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .buy-btn { background: var(--neon-blue); color: #000; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        /* UI Elements */
+        .card { width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid #1a2236; border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .btn { background: var(--neon-blue); color: black; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .spin-btn { background: var(--neon-gold); width: 100%; padding: 15px; border-radius: 12px; font-family: 'Orbitron'; font-weight: bold; border: none; margin-top: 10px; }
 
-        /* Sıralama Listesi */
-        .rank-item { width: 100%; display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #1a2236; align-items: center; }
-        .rank-number { font-family: 'Orbitron'; color: var(--neon-purple); margin-right: 10px; }
-        .rank-name { flex: 1; font-weight: bold; }
-
-        /* Alt Navigasyon */
+        /* Navbar */
         .navbar { position: fixed; bottom: 0; width: 100%; background: #0d1117; display: flex; padding: 12px 0; border-top: 1px solid #1a2236; }
-        .nav-item { flex: 1; text-align: center; color: #4b5563; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .nav-item.active { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
+        .nav-item { flex: 1; text-align: center; color: #4b5563; font-size: 10px; font-weight: bold; cursor: pointer; }
+        .nav-item.active { color: var(--neon-blue); }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="stat-box"><small>TIK GÜCÜ</small><span id="ui-tap">+1</span></div>
-        <div class="stat-box"><small>PASİF GELİR</small><span id="ui-pas">0/s</span></div>
-    </div>
-
     <div id="home" class="page active">
-        <div id="score-display">0</div>
-        <div class="tap-area" onclick="handleTap()">🧠</div>
-        <button onclick="claimDaily()" style="margin-top:20px; background:var(--neon-gold); border:none; padding:10px 20px; border-radius:10px; font-weight:bold; font-family:'Orbitron';">🎁 GÜNLÜK 10K</button>
+        <div id="score-container">
+            <small style="color:var(--neon-blue)">TOPLAM BAKİYE</small>
+            <div id="score">0</div>
+        </div>
+        <div class="brain" onclick="handleTap()">🧠</div>
+        <button class="spin-btn" onclick="spinWheel()">🎡 ŞANSLI ÇARK</button>
+        <p id="ref-status" style="font-size:12px; color:#4b5563; margin-top:15px;"></p>
     </div>
 
     <div id="market" class="page">
-        <h2 style="font-family:'Orbitron'; color:var(--neon-blue)">MARKET</h2>
-        <div class="card"><div class="info"><b>RTX 5090</b><p>+5 Tık Gücü</p></div><button class="buy-btn" onclick="buy('tap', 5000, 5)">5K</button></div>
-        <div class="card"><div class="info"><b>AI Server</b><p>+50/sn Gelir</p></div><button class="buy-btn" onclick="buy('pas', 20000, 50)">20K</button></div>
+        <h2 style="font-family:Orbitron; color:var(--neon-blue)">MARKET</h2>
+        <div class="card"><div><b>Nvidia H100</b><br><small>+10 Tık Gücü</small></div><button class="btn" onclick="buy('tap', 10000, 10)">10K</button></div>
+        <div class="card"><div><b>AI Veri Merkezi</b><br><small>+100/sn Pasif</small></div><button class="btn" onclick="buy('pas', 50000, 100)">50K</button></div>
     </div>
 
-    <div id="ranking" class="page">
-        <h2 style="font-family:'Orbitron'; color:var(--neon-blue)">GLOBAL LİDERLER</h2>
-        <div id="leader-list" style="width:100%;">Yükleniyor...</div>
+    <div id="friends" class="page">
+        <h2 style="font-family:Orbitron; color:var(--neon-blue)">ARKADAŞLAR</h2>
+        <div class="card" style="flex-direction:column; text-align:center; gap:10px;">
+            <p>Her davet için <b>50.000 MB</b> kazan!</p>
+            <button class="btn" style="width:100%" onclick="copyRef()">DAVET LİNKİNİ KOPYALA</button>
+        </div>
+    </div>
+
+    <div id="rank" class="page">
+        <h2 style="font-family:Orbitron; color:var(--neon-blue)">SIRALAMA</h2>
+        <div id="leader-list" style="width:100%"></div>
     </div>
 
     <div class="navbar">
         <div class="nav-item active" onclick="show('home', this)">ANA SAYFA</div>
         <div class="nav-item" onclick="show('market', this)">MARKET</div>
-        <div class="nav-item" onclick="show('ranking', this)">SIRALAMA</div>
+        <div class="nav-item" onclick="show('friends', this)">ARKADAŞLAR</div>
+        <div class="nav-item" onclick="show('rank', this)">SIRALAMA</div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        let user = tg.initDataUnsafe.user || { id: "000", first_name: "Boss" };
+        let user = tg.initDataUnsafe.user || { id: "test_dev", first_name: "Boss" };
         const SERVER_URL = "https://epistemically-unconcealing-theda.ngrok-free.dev";
+        
+        // URL'den referans ID'sini çek
+        const urlParams = new URLSearchParams(window.location.search);
+        const referrerId = urlParams.get('ref');
 
         let score = 0, tapPower = 1, pasIncome = 0;
 
         async function init() {
-            try {
-                const res = await fetch(`${SERVER_URL}/login`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ user_id: user.id, username: user.first_name })
-                });
-                const data = await res.json();
-                score = data.score;
-                tapPower = data.tap || 1;
-                pasIncome = data.pas || 0;
-                updateUI();
-            } catch (e) { tg.showAlert("Bağlantı Hatası!"); }
-        }
-
-        async function loadLeaderboard() {
-            try {
-                const res = await fetch(`${SERVER_URL}/leaderboard`);
-                const list = await res.json();
-                let html = "";
-                list.forEach((p, i) => {
-                    html += `<div class="rank-item">
-                        <span class="rank-number">#${i+1}</span>
-                        <span class="rank-name">${p.username}</span>
-                        <b>${Math.floor(p.score).toLocaleString()}</b>
-                    </div>`;
-                });
-                document.getElementById('leader-list').innerHTML = html;
-            } catch (e) { document.getElementById('leader-list').innerHTML = "Bağlantı kesildi."; }
-        }
-
-        function handleTap() {
-            score += tapPower;
+            const res = await fetch(`${SERVER_URL}/login`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ user_id: user.id, username: user.first_name, referrer: referrerId })
+            });
+            const data = await res.json();
+            score = data.score; tapPower = data.tap; pasIncome = data.pas;
             updateUI();
-            tg.HapticFeedback.impactOccurred('medium');
+        }
+
+        function handleTap() { score += tapPower; updateUI(); tg.HapticFeedback.impactOccurred('medium'); }
+
+        async function spinWheel() {
+            const res = await fetch(`${SERVER_URL}/spin`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ user_id: user.id }) });
+            const data = await res.json();
+            if(data.status === 'success') {
+                score = data.new_score; updateUI();
+                tg.showAlert(`🎡 Çarktan ${data.win.toLocaleString()} MB kazandın!`);
+            } else { tg.showAlert("Günde sadece 1 kez çevirebilirsin!"); }
         }
 
         function buy(type, cost, bonus) {
             if(score >= cost) {
                 score -= cost;
-                if(type === 'tap') tapPower += bonus;
-                else pasIncome += bonus;
-                updateUI();
-                save();
-            } else { tg.showAlert("Yetersiz MB!"); }
+                if(type==='tap') tapPower += bonus; else pasIncome += bonus;
+                updateUI(); save();
+            } else tg.showAlert("Yetersiz Bakiye!");
         }
 
-        async function claimDaily() {
-            const res = await fetch(`${SERVER_URL}/claim_daily`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ user_id: user.id })
-            });
-            const data = await res.json();
-            if(data.status === 'success') {
-                score = data.new_score;
-                updateUI();
-                tg.showAlert("10,000 MB Bonus Alındı!");
-            } else { tg.showAlert("Bugünlük bonus alındı!"); }
+        function copyRef() {
+            const refLink = `https://t.me/SENIN_BOT_ADIN/start?startapp=${user.id}`;
+            const el = document.createElement('textarea');
+            el.value = refLink; document.body.appendChild(el); el.select();
+            document.execCommand('copy'); document.body.removeChild(el);
+            tg.showAlert("Referans linkin kopyalandı! Arkadaşlarına gönder.");
         }
 
-        async function save() {
-            fetch(`${SERVER_URL}/save`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ user_id: user.id, score: score, tap: tapPower, pas: pasIncome })
+        async function loadLeaderboard() {
+            const res = await fetch(`${SERVER_URL}/leaderboard`);
+            const list = await res.json();
+            let html = "";
+            list.forEach((p, i) => {
+                html += `<div class="card"><span>#${i+1} ${p.username}</span><b>${Math.floor(p.score).toLocaleString()}</b></div>`;
             });
+            document.getElementById('leader-list').innerHTML = html;
+        }
+
+        function save() {
+            fetch(`${SERVER_URL}/save`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ user_id: user.id, score: score, tap: tapPower, pas: pasIncome }) });
         }
 
         function updateUI() {
-            document.getElementById('score-display').innerText = Math.floor(score).toLocaleString();
-            document.getElementById('ui-tap').innerText = "+" + tapPower;
-            document.getElementById('ui-pas').innerText = pasIncome + "/s";
+            document.getElementById('score').innerText = Math.floor(score).toLocaleString();
         }
 
         function show(id, el) {
@@ -157,12 +143,11 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             el.classList.add('active');
-            if(id === 'ranking') loadLeaderboard();
+            if(id === 'rank') loadLeaderboard();
         }
 
-        setInterval(() => { if(pasIncome > 0) { score += (pasIncome / 10); updateUI(); } }, 100);
+        setInterval(() => { if(pasIncome > 0) { score += (pasIncome/10); updateUI(); } }, 100);
         setInterval(save, 15000);
-
         init();
     </script>
 </body>
