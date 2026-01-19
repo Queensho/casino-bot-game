@@ -7,74 +7,168 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono&display=swap');
+        
         body { background: #05070a; color: #00f2ff; font-family: 'Roboto Mono', monospace; margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; }
-        #top-bar { width: 90%; display: flex; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid #1a2236; }
-        .stat-card { background: #0f172a; padding: 8px 12px; border-radius: 10px; border: 1px solid #00f2ff; text-align: center; flex: 1; margin: 0 5px; }
+        
+        /* Üst Panel */
+        #top-bar { width: 90%; display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #1a2236; }
+        .stat-card { background: #0f172a; padding: 8px; border-radius: 10px; border: 1px solid #00f2ff; text-align: center; flex: 1; margin: 0 5px; }
         .stat-label { font-size: 8px; color: #5c6b89; text-transform: uppercase; }
-        .stat-value { font-size: 13px; font-weight: bold; color: #fff; font-family: 'Orbitron', sans-serif; }
+        .stat-value { font-size: 11px; font-weight: bold; color: #fff; font-family: 'Orbitron', sans-serif; }
+
+        /* Ana Alan */
         #score-container { margin-top: 20px; text-align: center; }
-        #score { font-size: 42px; font-family: 'Orbitron', sans-serif; color: #fff; text-shadow: 0 0 20px #00f2ff; }
-        #ai-brain { width: 240px; height: 240px; border-radius: 50%; border: 4px solid #7000ff; margin-top: 20px; display: flex; align-items: center; justify-content: center; font-size: 100px; cursor: pointer; background: radial-gradient(circle, #1a103d, #05070a); box-shadow: 0 0 40px rgba(112, 0, 255, 0.3); transition: transform 0.05s; }
+        #score { font-size: 40px; font-family: 'Orbitron', sans-serif; color: #fff; text-shadow: 0 0 15px #00f2ff; }
+        
+        #ai-brain { 
+            width: 220px; height: 220px; border-radius: 50%; border: 4px solid #7000ff; 
+            margin-top: 20px; display: flex; align-items: center; justify-content: center; 
+            font-size: 90px; cursor: pointer; background: radial-gradient(circle, #1a103d, #05070a); 
+            box-shadow: 0 0 40px rgba(112, 0, 255, 0.3); transition: transform 0.05s;
+        }
         #ai-brain:active { transform: scale(0.92); }
-        #energy-container { width: 85%; margin-top: 25px; }
-        #energy-bg { width: 100%; height: 12px; background: #1a2236; border-radius: 6px; overflow: hidden; }
+
+        /* Enerji */
+        #energy-container { width: 85%; margin-top: 20px; }
+        #energy-bg { width: 100%; height: 10px; background: #1a2236; border-radius: 5px; overflow: hidden; }
         #energy-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #00f2ff, #7000ff); transition: width 0.3s; }
+
+        /* Modallar */
+        .modal { display: none; position: fixed; bottom: 0; width: 100%; background: #0f172a; border-radius: 25px 25px 0 0; padding: 20px 0; z-index: 1000; border-top: 2px solid #7000ff; max-height: 70vh; overflow-y: auto; }
+        .card { background: #1e293b; margin: 10px 20px; padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
+        .buy-btn { background: #7000ff; color: #fff; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
         
-        /* Modal Paneller */
-        .modal { display: none; position: fixed; bottom: 0; width: 100%; background: #0f172a; border-radius: 25px 25px 0 0; padding: 25px 0; z-index: 1000; border-top: 2px solid #7000ff; max-height: 70vh; overflow-y: auto; }
-        .shop-card { background: #1e293b; margin: 10px 20px; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
-        .buy-btn { background: #7000ff; color: #fff; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; }
-        
-        #tab-bar { position: fixed; bottom: 0; width: 100%; display: flex; background: #05070a; border-top: 1px solid #1a2236; padding: 15px 0; }
-        .tab-item { flex: 1; text-align: center; font-size: 11px; color: #5c6b89; cursor: pointer; }
+        /* Menü */
+        #tab-bar { position: fixed; bottom: 0; width: 100%; display: flex; background: #05070a; border-top: 1px solid #1a2236; padding: 12px 0; }
+        .tab-item { flex: 1; text-align: center; font-size: 10px; color: #5c6b89; cursor: pointer; }
         .tab-item.active { color: #00f2ff; }
     </style>
 </head>
 <body>
 
     <div id="top-bar">
-        <div class="stat-card">
-            <span class="stat-label">SEVİYE</span>
-            <span class="stat-value" id="rank">Çaylak</span>
-        </div>
-        <div class="stat-card" onclick="claimDaily()">
-            <span class="stat-label">GÜNLÜK</span>
-            <span class="stat-value">🎁 AL</span>
-        </div>
+        <div class="stat-card"><span class="stat-label">SEVİYE</span><span class="stat-value" id="rank">Çaylak</span></div>
+        <div class="stat-card" onclick="claimDaily()"><span class="stat-label">GÜNLÜK</span><span class="stat-value">🎁 AL</span></div>
+        <div class="stat-card"><span class="stat-label">PASİF</span><span class="stat-value" id="passive-val">0/s</span></div>
     </div>
 
     <div id="score-container">
         <div id="score">0</div>
-        <div style="font-size: 10px; color: #5c6b89;">TOPLANAN VERİ (MB)</div>
+        <div style="font-size: 9px; color: #5c6b89;">TOPLANAN VERİ (MB)</div>
     </div>
 
     <div id="ai-brain" onclick="processData(event)">🧠</div>
 
     <div id="energy-container">
         <div id="energy-bg"><div id="energy-fill"></div></div>
-        <div style="text-align:center; font-size:12px; margin-top:5px;">⚡ <span id="energy-val">1000</span></div>
+        <div style="text-align:center; font-size:11px; margin-top:5px;">⚡ <span id="energy-val">1000</span></div>
     </div>
 
     <div id="shop-panel" class="modal">
-        <h3 style="text-align: center;">YÜKSELTMELER</h3>
-        <div class="shop-card">
-            <div><b>GPU V1</b><br><small>Tık +2 (500 MB)</small></div>
-            <button class="buy-btn" onclick="buy('tap', 500)">YÜKSELT</button>
-        </div>
-        <button onclick="closeModals()" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 12px; border-radius: 10px;">KAPAT</button>
+        <h3 style="text-align: center;">MARKET</h3>
+        <div class="card"><div><b>GPU V1</b><br><small>Tık +2 (500 MB)</small></div><button class="buy-btn" onclick="buy('tap', 500)">AL</button></div>
+        <div class="card"><div><b>Sunucu</b><br><small>+50/s (2000 MB)</small></div><button class="buy-btn" onclick="buy('passive', 2000)">AL</button></div>
+        <button onclick="closeModals()" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 10px; border-radius: 10px;">KAPAT</button>
+    </div>
+
+    <div id="leader-panel" class="modal">
+        <h3 style="text-align: center;">LİDERLER</h3>
+        <div class="card"><span>1. Yazılımcı_Ali</span><span>1.5M MB</span></div>
+        <div class="card"><span>2. AI_Master</span><span>900K MB</span></div>
+        <button onclick="closeModals()" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 10px; border-radius: 10px;">KAPAT</button>
     </div>
 
     <div id="friends-panel" class="modal">
         <h3 style="text-align: center;">EKİBİNİ KUR</h3>
-        <p style="text-align: center; font-size: 12px; padding: 0 20px;">Arkadaşlarını davet et, her arkadaşın için 50.000 MB veri kazan!</p>
-        <div class="shop-card">
-            <div id="invite-link" style="font-size: 10px; color: #00f2ff;">Link Hazırlanıyor...</div>
-            <button class="buy-btn" onclick="copyLink()">KOPYALA</button>
-        </div>
-        <button onclick="closeModals()" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 12px; border-radius: 10px;">KAPAT</button>
+        <p style="text-align: center; font-size: 11px;">Davet Linkin:</p>
+        <div class="card"><div id="invite-link" style="font-size: 9px;">Yükleniyor...</div><button class="buy-btn" onclick="copyLink()">KOPYALA</button></div>
+        <button onclick="closeModals()" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 10px; border-radius: 10px;">KAPAT</button>
     </div>
 
     <div id="tab-bar">
-        <div class="tab-item active" onclick="closeModals()">💻 TERMİNAL</div>
+        <div class="tab-item active" onclick="closeModals()">💻 ANA</div>
         <div class="tab-item" onclick="openModal('shop-panel')">🛠 MARKET</div>
-        <div class="tab-item" onclick="openModal
+        <div class="tab-item" onclick="openModal('leader-panel')">🏆 LİDERLER</div>
+        <div class="tab-item" onclick="openModal('friends-panel')">👥 EKİP</div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        let userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "0";
+
+        let score = parseFloat(localStorage.getItem('ai_v4_score')) || 0;
+        let tap = parseInt(localStorage.getItem('ai_v4_tap')) || 1;
+        let passive = parseInt(localStorage.getItem('ai_v4_passive')) || 0;
+        let energy = 1000;
+
+        function updateUI() {
+            document.getElementById('score').innerText = Math.floor(score).toLocaleString();
+            document.getElementById('energy-val').innerText = energy;
+            document.getElementById('energy-fill').style.width = (energy / 10) + "%";
+            document.getElementById('passive-val').innerText = passive + "/s";
+            document.getElementById('invite-link').innerText = "t.me/BOT_ADIN?start=" + userId;
+            
+            let rank = "Çaylak";
+            if(score > 50000) rank = "Kodcu";
+            if(score > 500000) rank = "CEO";
+            document.getElementById('rank').innerText = rank;
+        }
+
+        function processData(e) {
+            if (energy >= tap) {
+                score += tap; energy -= tap;
+                tg.HapticFeedback.impactOccurred('light');
+                updateUI(); save();
+            }
+        }
+
+        function openModal(id) { closeModals(); document.getElementById(id).style.display = 'block'; }
+        function closeModals() {
+            document.getElementById('shop-panel').style.display = 'none';
+            document.getElementById('leader-panel').style.display = 'none';
+            document.getElementById('friends-panel').style.display = 'none';
+        }
+
+        function buy(type, cost) {
+            if (score >= cost) {
+                score -= cost;
+                if (type === 'tap') tap += 2;
+                else passive += 25;
+                updateUI(); save();
+                tg.showAlert("Başarılı!");
+            } else { tg.showAlert("Yetersiz Veri!"); }
+        }
+
+        function copyLink() {
+            let link = "https://t.me/BOT_ADIN?start=" + userId;
+            const el = document.createElement('textarea'); el.value = link;
+            document.body.appendChild(el); el.select(); document.execCommand('copy');
+            document.body.removeChild(el); tg.showAlert("Kopyalandı!");
+        }
+
+        function claimDaily() {
+            let last = localStorage.getItem('last_v4_claim');
+            let now = new Date().toDateString();
+            if (last !== now) {
+                score += 5000; localStorage.setItem('last_v4_claim', now);
+                tg.showAlert("5.000 MB alındı!"); updateUI(); save();
+            } else { tg.showAlert("Yarın tekrar gel!"); }
+        }
+
+        function save() {
+            localStorage.setItem('ai_v4_score', score);
+            localStorage.setItem('ai_v4_tap', tap);
+            localStorage.setItem('ai_v4_passive', passive);
+        }
+
+        setInterval(() => { 
+            if (passive > 0) score += (passive / 10);
+            if (energy < 1000) energy += 3;
+            updateUI(); 
+        }, 100);
+
+        updateUI();
+    </script>
+</body>
+</html>
