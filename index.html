@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Tycoon: Card Evo</title>
+    <title>AI Tycoon: Daily Combo</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono&display=swap');
@@ -39,6 +39,29 @@
         .buy-btn { background: var(--main-color); color: black; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-left: 10px; transition: 0.3s; }
         .buy-btn:disabled { background: #334155; color: #64748b; }
 
+        /* Günlük Kombo Modal */
+        #daily-combo-modal {
+            text-align: center;
+            padding: 30px 0;
+            display: flex; /* Flexbox ile ortalama */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #daily-combo-modal h3 { color: var(--main-color); font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px var(--main-color); }
+        #daily-combo-modal .combo-reward { font-size: 24px; font-weight: bold; color: #fff; margin: 15px 0; text-shadow: 0 0 15px #00f2ff; }
+        #daily-combo-modal .combo-claim-btn { 
+            background: linear-gradient(45deg, #00f2ff, #7000ff); 
+            color: white; padding: 12px 25px; border-radius: 10px; border: none; 
+            font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 0 15px rgba(112,0,255,0.4);
+        }
+        #daily-combo-modal .combo-claim-btn:disabled { background: #334155; box-shadow: none; color: #64748b; }
+        /* Sandık İkonu */
+        #combo-icon { font-size: 80px; text-shadow: 0 0 20px var(--main-color); margin-bottom: 10px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.9; } 100% { transform: scale(1); opacity: 1; } }
+
+
         #nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #05070a; border-top: 1px solid #1a2236; padding: 15px 0; }
         .nav-item { flex: 1; text-align: center; font-size: 10px; color: #64748b; cursor: pointer; }
         .active { color: var(--main-color); font-weight: bold; }
@@ -58,23 +81,29 @@
 
     <div id="ai-hub" onclick="handleTap(event)">🤖</div>
 
+    <div id="daily-combo-modal" class="modal">
+        <h3 style="margin-top:0;">GÜNLÜK KOMBO</h3>
+        <div id="combo-icon">🎁</div>
+        <div class="combo-reward" id="daily-reward-amount">+200.000 MB</div>
+        <button class="combo-claim-btn" id="claim-combo-btn" onclick="claimDailyCombo()">ÖDÜLÜ AL</button>
+    </div>
+
     <div id="cards-modal" class="modal">
         <h3 style="text-align: center;">KARTLAR</h3>
-        <div id="card-list">
-            </div>
-        <button onclick="toggleModal('', false)" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 10px; border-radius: 8px;">KAPAT</button>
+        <div id="card-list"></div>
+        <button onclick="toggleModal('cards-modal', false)" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 10px; border-radius: 8px;">KAPAT</button>
     </div>
 
     <div id="shop-modal" class="modal">
         <h3 style="text-align: center;">MARKET</h3>
         <div class="card-item"><div><b>H100 GPU</b><br><small>+10/sn (10.000 MB)</small></div><button class="buy-btn" onclick="buy('passive', 10000, 10)">AL</button></div>
-        <button onclick="toggleModal('', false)" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 10px; border-radius: 8px;">KAPAT</button>
+        <button onclick="toggleModal('shop-modal', false)" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 10px; border-radius: 8px;">KAPAT</button>
     </div>
 
     <div id="tasks-modal" class="modal">
         <h3 style="text-align: center;">GÖREVLER</h3>
         <div class="card-item"><div><b>Kanala Katıl</b><br><small>+50k MB</small></div><button class="buy-btn" onclick="doTask('t1', 'https://t.me/Kanal', 50000)">KATIL</button></div>
-        <button onclick="toggleModal('', false)" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 10px; border-radius: 8px;">KAPAT</button>
+        <button onclick="toggleModal('tasks-modal', false)" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 10px; border-radius: 8px;">KAPAT</button>
     </div>
 
     <div id="nav">
@@ -82,16 +111,16 @@
         <div class="nav-item" onclick="toggleModal('shop-modal', true)">🛠 MARKET</div>
         <div class="nav-item active" onclick="toggleModal('', false)">💻 ANA</div>
         <div class="nav-item" onclick="toggleModal('tasks-modal', true)">🎁 GÖREVLER</div>
-        <div class="nav-item" onclick="tg.showAlert('Yakında!')">👥 EKİP</div>
+        <div class="nav-item" onclick="toggleModal('daily-combo-modal', true)">⭐ KOMBO</div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        let score = parseFloat(localStorage.getItem('ai_card_score')) || 0;
-        let passive = parseInt(localStorage.getItem('ai_card_pas')) || 0;
-        let tapPower = parseInt(localStorage.getItem('ai_card_tap')) || 1; // Tap power da kartlardan etkilenecek
+        let score = parseFloat(localStorage.getItem('ai_combo_score')) || 0;
+        let passive = parseInt(localStorage.getItem('ai_combo_pas')) || 0;
+        let tapPower = parseInt(localStorage.getItem('ai_combo_tap')) || 1;
 
         const ranks = [
             { name: "STAJYER AI", emoji: "🤖", min: 0, class: "rank-1" },
@@ -103,11 +132,12 @@
         const cards = [
             { id: 'gpu_v1', name: 'GPU V1', desc: '+5 Tık Gücü', type: 'tap', amount: 5, price: 1000, img: 'https://cdn-icons-png.flaticon.com/512/3660/3660007.png' },
             { id: 'server_rack', name: 'Sunucu Odası', desc: '+10/sn Pasif', type: 'passive', amount: 10, price: 5000, img: 'https://cdn-icons-png.flaticon.com/512/3067/3067866.png' },
-            { id: 'quantum_chip', name: 'Kuantum Çip', desc: '+20 Tık Gücü', type: 'tap', amount: 20, price: 25000, img: 'https://cdn-icons-png.flaticon.com/512/5777/5777995.png' },
+            { id: 'quantum_chip', name: 'Kuantum Çip', desc: '+20 Tık Gücü', type: 'tap', amount: 25000, price: 25000, img: 'https://cdn-icons-png.flaticon.com/512/5777/5777995.png' },
             { id: 'data_center', name: 'Veri Merkezi', desc: '+50/sn Pasif', type: 'passive', amount: 50, price: 100000, img: 'https://cdn-icons-png.flaticon.com/512/1087/1087798.png' }
         ];
 
-        let ownedCards = JSON.parse(localStorage.getItem('ai_card_owned')) || {};
+        let ownedCards = JSON.parse(localStorage.getItem('ai_combo_owned')) || {};
+        const dailyRewardAmount = 200000; // Günlük ödül miktarı
 
         function updateUI() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString();
@@ -135,7 +165,23 @@
             if (score >= ranks[ranks.length-1].min) progress = 100;
             document.getElementById('progress-bar').style.width = progress + "%";
 
-            renderCards();
+            // Günlük Kombo Durumu
+            const lastClaimDate = localStorage.getItem('last_daily_claim');
+            const today = new Date().toDateString();
+            const claimBtn = document.getElementById('claim-combo-btn');
+            document.getElementById('daily-reward-amount').innerText = "+" + dailyRewardAmount.toLocaleString() + " MB";
+
+            if (lastClaimDate === today) {
+                claimBtn.disabled = true;
+                claimBtn.innerText = "ALINDI";
+                claimBtn.style.background = "#334155"; // Gri
+            } else {
+                claimBtn.disabled = false;
+                claimBtn.innerText = "ÖDÜLÜ AL";
+                claimBtn.style.background = "linear-gradient(45deg, #00f2ff, #7000ff)";
+            }
+
+            renderCards(); // Kartları da güncelle
         }
 
         function renderCards() {
@@ -157,7 +203,6 @@
                 `;
                 cardListDiv.appendChild(cardElement);
 
-                // Disable the button if not enough score
                 if (!isOwned && score < card.price) {
                     document.getElementById(`buy-${card.id}`).disabled = true;
                 }
@@ -188,14 +233,28 @@
         }
 
         function doTask(taskId, link, reward) {
-            if (localStorage.getItem(taskId)) return; // Görev zaten yapılmış
+            if (localStorage.getItem(taskId)) return;
             tg.openLink(link);
-            setTimeout(() => { // Kullanıcının kanala katılmasını beklemek için
+            setTimeout(() => {
                 score += reward;
-                localStorage.setItem(taskId, 'true'); // Görevi tamamlandı işaretle
+                localStorage.setItem(taskId, 'true');
                 updateUI(); save();
                 tg.showAlert("Ödül Hesabına Tanımlandı: " + reward.toLocaleString() + " MB!");
-            }, 3000); // 3 saniye bekle
+            }, 3000);
+        }
+
+        function claimDailyCombo() {
+            const lastClaimDate = localStorage.getItem('last_daily_claim');
+            const today = new Date().toDateString();
+
+            if (lastClaimDate !== today) {
+                score += dailyRewardAmount;
+                localStorage.setItem('last_daily_claim', today);
+                updateUI(); save();
+                tg.showAlert("Günlük kombodan " + dailyRewardAmount.toLocaleString() + " MB kazandın!");
+            } else {
+                tg.showAlert("Bugün için ödülünü zaten aldın. Yarın tekrar gel!");
+            }
         }
 
         function toggleModal(id, show) {
@@ -204,25 +263,23 @@
             
             if (show) {
                 document.getElementById(id).style.display = 'block';
-                // Aktif butonu vurgula
                 const activeNav = document.querySelector(`.nav-item[onclick*="toggleModal('${id}', true)"]`);
                 if(activeNav) activeNav.classList.add('active');
             } else {
-                // Ana ekran butonu aktif olsun
-                document.querySelector('.nav-item.active').classList.add('active'); // Eğer yoksa ilkine ekle
-                document.querySelector('.nav-item[onclick*="toggleModal('', false)"]').classList.add('active');
+                document.querySelector('.nav-item[onclick*="toggleModal(\'\', false)"]').classList.add('active'); // Ana ekran aktif
             }
         }
 
         function save() {
-            localStorage.setItem('ai_card_score', score);
-            localStorage.setItem('ai_card_tap', tapPower);
-            localStorage.setItem('ai_card_pas', passive);
-            localStorage.setItem('ai_card_owned', JSON.stringify(ownedCards));
+            localStorage.setItem('ai_combo_score', score);
+            localStorage.setItem('ai_combo_tap', tapPower);
+            localStorage.setItem('ai_combo_pas', passive);
+            localStorage.setItem('ai_combo_owned', JSON.stringify(ownedCards));
+            localStorage.setItem('last_daily_claim', localStorage.getItem('last_daily_claim')); // Günlük ödülü de kaydet
         }
 
         setInterval(() => { 
-            score += (passive / 10); // Pasif kazanç her 100ms'de ekleniyor (saniyede 10 kez)
+            score += (passive / 10);
             updateUI(); 
         }, 100);
 
