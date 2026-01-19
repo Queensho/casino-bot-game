@@ -1,42 +1,134 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI TYCOON</title>
+    <title>AI Tycoon | Silicon Valley</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #080a12; color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        #score { font-size: 50px; font-weight: bold; color: #00d4ff; text-shadow: 0 0 20px #00d4ff; margin-bottom: 20px; }
-        #ai-button { width: 220px; height: 220px; border-radius: 50%; background: #7000ff; border: 5px solid #00d4ff; font-size: 100px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(112,0,255,0.4); }
-        #ai-button:active { transform: scale(0.9); }
-        .info { position: absolute; top: 10px; font-size: 12px; color: #5c6b89; }
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
+        
+        body { 
+            background: #05070a; color: #00f2ff; font-family: 'Fira Code', monospace; 
+            margin: 0; display: flex; flex-direction: column; align-items: center; 
+            height: 100vh; overflow: hidden; 
+        }
+
+        /* Üst Bilgi Paneli */
+        #status-bar { 
+            width: 100%; background: #0f172a; padding: 15px 0; 
+            border-bottom: 2px solid #7000ff; display: flex; justify-content: space-around;
+        }
+        .stat { text-align: center; }
+        .stat-label { font-size: 10px; color: #5c6b89; }
+        .stat-value { font-size: 14px; font-weight: bold; color: #fff; }
+
+        /* Ana Puan ve Gövde */
+        #container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+        
+        #score-title { font-size: 12px; color: #5c6b89; letter-spacing: 2px; }
+        #score { font-size: 48px; font-weight: bold; color: #fff; text-shadow: 0 0 20px #7000ff; margin: 10px 0; }
+
+        /* Büyük AI Çekirdeği */
+        #ai-core { 
+            width: 220px; height: 220px; border-radius: 50%; border: 4px solid #00f2ff;
+            background: radial-gradient(circle, #1a103d, #05070a);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 100px; cursor: pointer; position: relative;
+            box-shadow: 0 0 40px rgba(112, 0, 255, 0.3);
+            transition: transform 0.05s;
+        }
+        #ai-core:active { transform: scale(0.92); border-color: #7000ff; }
+
+        /* İşlem Çubuğu */
+        #loading-container { width: 80%; margin-top: 30px; }
+        #loading-bar { width: 100%; height: 8px; background: #1a2236; border-radius: 4px; overflow: hidden; }
+        #loading-fill { width: 0%; height: 100%; background: #00f2ff; box-shadow: 0 0 10px #00f2ff; transition: width 0.1s; }
+
+        /* Alt Menü Butonları */
+        #nav { 
+            width: 100%; background: #0f172a; display: flex; 
+            border-top: 1px solid #1a2236; padding: 15px 0;
+        }
+        .nav-item { flex: 1; text-align: center; color: #5c6b89; font-size: 12px; cursor: pointer; }
+        .nav-item.active { color: #00f2ff; font-weight: bold; }
+
+        /* Tıklama Animasyonu */
+        .tap-effect { position: absolute; color: #fff; font-weight: bold; animation: flyUp 0.6s forwards; pointer-events: none; }
+        @keyframes flyUp { to { transform: translateY(-100px); opacity: 0; } }
     </style>
 </head>
 <body>
-    <div class="info">AI TYCOON v1.0 - GÜVENLİ MOD</div>
-    <div id="score">0</div>
-    <div id="ai-button" onclick="handleTap()">🧠</div>
+
+    <div id="status-bar">
+        <div class="stat">
+            <span class="stat-label">TIK GÜCÜ</span><br>
+            <span class="stat-value" id="power-val">+1 MB</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">SUNUCU</span><br>
+            <span class="stat-value" id="passive-val">0/s</span>
+        </div>
+    </div>
+
+    <div id="container">
+        <span id="score-title">SİSTEM VERİSİ</span>
+        <div id="score">0</div>
+
+        <div id="ai-core" onclick="handleTap(event)">🧠</div>
+
+        <div id="loading-container">
+            <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 5px;">
+                <span>İŞLEMCİ YÜKÜ</span>
+                <span id="load-percent">0%</span>
+            </div>
+            <div id="loading-bar"><div id="loading-fill"></div></div>
+        </div>
+    </div>
+
+    <div id="nav">
+        <div class="nav-item active">💻 TERMİNAL</div>
+        <div class="nav-item" onclick="tg.showAlert('Market Yakında Açılıyor!')">🛠 MARKET</div>
+        <div class="nav-item" onclick="tg.showAlert('Ekip Sistemi Yükleniyor...')">👥 EKİP</div>
+    </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Veriyi çek
-        let data = parseInt(localStorage.getItem('my_ai_data')) || 0;
+        let dataCount = parseInt(localStorage.getItem('ai_boss_data')) || 0;
+        let tapPower = 1;
+        let load = 0;
 
-        function updateDisplay() {
-            document.getElementById('score').innerText = data.toLocaleString();
+        function updateUI() {
+            document.getElementById('score').innerText = dataCount.toLocaleString();
+            document.getElementById('power-val').innerText = "+" + tapPower + " MB";
+            
+            // Barın dolma simülasyonu
+            document.getElementById('loading-fill').style.width = load + "%";
+            document.getElementById('load-percent').innerText = load + "%";
         }
 
-        function handleTap() {
-            data += 1; // Her tıklamada 1 artır
-            updateDisplay();
-            localStorage.setItem('my_ai_data', data); // Kaydet
-            tg.HapticFeedback.impactOccurred('medium'); // Titreşim
+        function handleTap(e) {
+            dataCount += tapPower;
+            load = (load + 5) % 105; // Tıkladıkça bar dolsun
+            
+            // Animasyon oluştur
+            const effect = document.createElement('div');
+            effect.className = 'tap-effect';
+            effect.innerText = "+" + tapPower;
+            effect.style.left = e.clientX + "px";
+            effect.style.top = e.clientY + "px";
+            document.body.appendChild(effect);
+            setTimeout(() => effect.remove(), 600);
+
+            tg.HapticFeedback.impactOccurred('medium');
+            localStorage.setItem('ai_boss_data', dataCount);
+            updateUI();
         }
 
-        updateDisplay();
+        // Başlangıç ayarı
+        updateUI();
     </script>
 </body>
 </html>
