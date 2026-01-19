@@ -1,22 +1,74 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Casino Empire</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
-        body { background: #0b0e11; color: white; font-family: 'Poppins', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; }
-        #header { width: 90%; display: flex; justify-content: space-between; padding: 20px 0; }
-        .stat-box { background: #1c2128; padding: 10px; border-radius: 12px; border: 1px solid #30363d; text-align: center; flex: 1; margin: 0 5px; }
-        .stat-label { font-size: 9px; color: #8b949e; display: block; text-transform: uppercase; }
-        .stat-value { font-weight: bold; color: #ffd700; font-size: 14px; }
-        #score-container { margin: 20px 0; font-size: 40px; font-weight: bold; color: #ffd700; text-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
-        #main-circle { width: 250px; height: 250px; border-radius: 50%; background: radial-gradient(circle, #333 0%, #000 100%); border: 8px solid #ffd700; display: flex; align-items: center; justify-content: center; font-size: 100px; cursor: pointer; position: relative; transition: transform 0.05s; box-shadow: 0 0 30px rgba(255, 215, 0, 0.2); }
-        #main-circle:active { transform: scale(0.92); }
-        #upgrade-panel { display: none; position: fixed; bottom: 0; width: 100%; background: #1c2128; border-radius: 20px 20px 0 0; padding: 20px 0; z-index: 100; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
-        .card { background: #0d1117; margin: 10px 20px; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #30363d; }
-        .buy-btn { background: #ffd700; color: black; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; }
-        #footer { position: fixed; bottom: 0; width: 100%; display: flex; background: #161b22; padding: 15px 0; border-top: 1px solid #30363d; }
-        .footer-item { flex:
+        body { background: #0b0e11; color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; }
+        #score-display { font-size: 32px; color: gold; margin-top: 20px; font-weight: bold; }
+        #main-tap { width: 200px; height: 200px; border-radius: 50%; border: 8px solid #00c4cc; margin-top: 40px; display: flex; align-items: center; justify-content: center; font-size: 80px; cursor: pointer; background: #222; box-shadow: 0 0 20px #00c4cc; transition: transform 0.05s; }
+        #main-tap:active { transform: scale(0.95); }
+        #upgrade-menu { display: none; position: fixed; bottom: 0; width: 100%; background: #1c2128; padding: 20px; border-radius: 20px 20px 0 0; }
+        .btn { background: #ffd700; color: black; border: none; padding: 10px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="score-display">💰 <span id="score">0</span></div>
+    <div style="font-size: 12px; color: #8b949e;">Saatlik: <span id="passive">0</span></div>
+
+    <div id="main-tap" onclick="tap()">🎰</div>
+
+    <div id="upgrade-menu" id="up-panel">
+        <h3 style="margin:0; color:#00c4cc">Market</h3>
+        <p>Tıklama Gücü (Fiyat: 100)</p>
+        <button class="btn" onclick="buyTap()">Geliştir</button>
+        <button onclick="closeMenu()" style="background:red; color:white; border:none; margin-top:10px; width:100%; padding:5px; border-radius:5px;">Kapat</button>
+    </div>
+
+    <div style="position:fixed; bottom:0; width:100%; display:flex; background:#161b22; padding:15px 0;">
+        <div style="flex:1; text-align:center; cursor:pointer;" onclick="openMenu()">🛠 Geliştir</div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+
+        let score = parseFloat(localStorage.getItem('score')) || 0;
+        let tapPower = parseInt(localStorage.getItem('tapPower')) || 1;
+        let passive = parseInt(localStorage.getItem('passive')) || 0;
+
+        function update() {
+            document.getElementById('score').innerText = Math.floor(score).toLocaleString();
+            document.getElementById('passive').innerText = passive;
+        }
+
+        function tap() {
+            score += tapPower;
+            update();
+            localStorage.setItem('score', score);
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+
+        function openMenu() { document.getElementById('upgrade-menu').style.display = 'block'; }
+        function closeMenu() { document.getElementById('upgrade-menu').style.display = 'none'; }
+
+        function buyTap() {
+            if (score >= 100) {
+                score -= 100;
+                tapPower += 1;
+                localStorage.setItem('tapPower', tapPower);
+                update();
+                tg.showAlert("Tıklama gücü arttı!");
+            } else { tg.showAlert("Yetersiz bakiye!"); }
+        }
+
+        setInterval(() => {
+            if (passive > 0) { score += (passive / 3600); update(); }
+        }, 1000);
+
+        update();
+    </script>
+</body>
+</html>
