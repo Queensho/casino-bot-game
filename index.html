@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Tycoon | Global Empire</title>
+    <title>AI Tycoon | Empire Builder</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap');
-        :root { --neon-blue: #00f2ff; --neon-purple: #7000ff; --glass: rgba(15, 23, 42, 0.95); }
+        :root { --neon-blue: #00f2ff; --neon-purple: #7000ff; --neon-gold: #ffcc00; --glass: rgba(15, 23, 42, 0.95); }
         body { background: #05070a; color: white; font-family: 'Rajdhani', sans-serif; margin: 0; padding: 0; height: 100vh; overflow: hidden; }
         
+        /* Üst Panel */
         #top-stats { display: flex; justify-content: space-between; width: 92%; margin: 15px auto; gap: 10px; }
         .stat-card { flex: 1; background: var(--glass); border: 1px solid var(--neon-blue); border-radius: 12px; padding: 8px; text-align: center; }
         .label { font-size: 9px; color: #8b949e; display: block; font-weight: bold; }
@@ -18,59 +19,83 @@
         .page { display: none; flex-direction: column; align-items: center; height: calc(100vh - 165px); overflow-y: auto; padding: 20px; width: 100%; box-sizing: border-box; }
         .page.active { display: flex; }
 
+        /* Ana Ekran */
         #score-main { font-family: 'Orbitron'; font-size: 40px; font-weight: bold; margin: 25px 0; text-shadow: 0 0 15px var(--neon-blue); }
         #brain-btn { width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, #1a103d, #05070a); display: flex; align-items: center; justify-content: center; font-size: 75px; cursor: pointer; border: 2px solid var(--neon-purple); box-shadow: 0 0 20px var(--neon-purple); transition: 0.1s; }
         #brain-btn:active { transform: scale(0.92); }
 
-        .rank-item { width: 100%; background: var(--glass); border: 1px solid #1a2236; padding: 12px; margin-bottom: 8px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .rank-name { font-weight: bold; color: var(--neon-blue); }
+        /* Market Kartları */
+        .item-card { width: 100%; background: var(--glass); border: 1px solid #1a2236; border-radius: 15px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--neon-blue); }
+        .item-card.gold { border-left-color: var(--neon-gold); }
+        .item-info b { display: block; font-size: 16px; color: var(--neon-blue); }
+        .item-info span { font-size: 12px; color: #94a3b8; }
+        .buy-btn { background: var(--neon-blue); color: #000; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
+        /* Navigasyon */
         #navbar { position: fixed; bottom: 0; width: 100%; background: #0d1117; display: flex; border-top: 1px solid #1a2236; padding: 12px 0; }
         .nav-item { flex: 1; text-align: center; color: #4b5563; font-size: 10px; font-weight: bold; cursor: pointer; }
         .nav-item.active { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
-        #status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; background: #ff4b4b; }
     </style>
 </head>
 <body>
 
     <div id="top-stats">
         <div class="stat-card">
-            <span class="label">BAĞLANTI</span>
-            <span class="value" id="ui-status"><span id="status-dot"></span>...</span>
+            <span class="label">TIK GÜCÜ</span>
+            <span class="value" id="ui-tap">+1</span>
         </div>
         <div class="stat-card" style="border-color:var(--neon-purple)">
-            <span class="label">VERİTABANI</span>
-            <span class="value">MacBook Air</span>
+            <span class="label">PASİF GELİR</span>
+            <span class="value" id="ui-pas">0/s</span>
         </div>
     </div>
 
     <div id="home-page" class="page active">
         <div id="score-main"><span id="score">0</span> <small style="font-size:14px; color:var(--neon-blue)">MB</small></div>
         <div id="brain-btn" onclick="handleTap()">🧠</div>
-        <p style="margin-top:20px; color:#4b5563; font-size:12px;">Puanlar Otomatik Yedekleniyor ✅</p>
+        <div id="status" style="margin-top:20px; color:#4b5563; font-size:10px;">MacBook Bulutuna Bağlı ✅</div>
     </div>
 
-    <div id="rank-page" class="page">
-        <h2 style="font-family:Orbitron; color:var(--neon-blue);">GLOBAL SIRALAMA</h2>
-        <div id="leaderboard-list" style="width:100%;">
-            <p style="text-align:center; color:#4b5563;">Yükleniyor...</p>
+    <div id="market-page" class="page">
+        <h2 style="font-family:Orbitron; color:var(--neon-blue);">YÜKSELTMELER</h2>
+        
+        <div class="item-card">
+            <div class="item-info"><b>RTX 5090 GPU</b><span>+5 Tık Gücü</span></div>
+            <button class="buy-btn" onclick="buy('tap', 5000, 5)">5K MB</button>
+        </div>
+
+        <div class="item-card" style="border-left-color: var(--neon-purple);">
+            <div class="item-info"><b>AI Sunucu Odası</b><span>+25 Pasif/s</span></div>
+            <button class="buy-btn" onclick="buy('pas', 15000, 25)">15K MB</button>
+        </div>
+
+        <div class="item-card gold">
+            <div class="item-info"><b>Nvidia Veri Merkezi</b><span>+200 Pasif/s</span></div>
+            <button class="buy-btn" style="background:var(--neon-gold)" onclick="buy('pas', 100000, 200)">100K MB</button>
         </div>
     </div>
 
+    <div id="rank-page" class="page">
+        <h2 style="font-family:Orbitron; color:var(--neon-blue);">GLOBAL LİDERLER</h2>
+        <div id="leaderboard-list" style="width:100%;"></div>
+    </div>
+
     <div id="navbar">
-        <div class="nav-item active" onclick="showPage('home-page', this)">🏠 ANA EKRAN</div>
-        <div class="nav-item" onclick="showPage('rank-page', this)">🏆 LİDERLER</div>
+        <div class="nav-item active" onclick="showPage('home-page', this)">🏠 ANA</div>
+        <div class="nav-item" onclick="showPage('market-page', this)">🛠 MARKET</div>
+        <div class="nav-item" onclick="showPage('rank-page', this)">🏆 SIRALAMA</div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
-        let user = tg.initDataUnsafe.user || { id: "test_dev", first_name: "Boss" };
+        let user = tg.initDataUnsafe.user || { id: "test_user", first_name: "Boss" };
 
-        // --- SENİN NGROK LİNKİN ---
         const SERVER_URL = "https://epistemically-unconcealing-theda.ngrok-free.dev";
 
         let score = 0;
+        let tapPower = 1;
+        let pasIncome = 0;
 
         async function init() {
             try {
@@ -81,11 +106,43 @@
                 });
                 const data = await res.json();
                 score = data.score;
-                document.getElementById('score').innerText = Math.floor(score).toLocaleString();
-                document.getElementById('ui-status').innerHTML = '<span id="status-dot" style="background:#00ff88"></span>AKTİF';
-            } catch (e) {
-                document.getElementById('ui-status').innerHTML = '<span id="status-dot" style="background:#ff4b4b"></span>HATA';
+                updateUI();
+            } catch (e) { console.error("Bulut hatası"); }
+        }
+
+        function handleTap() {
+            score += tapPower;
+            updateUI();
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+
+        function buy(type, cost, bonus) {
+            if (score >= cost) {
+                score -= cost;
+                if (type === 'tap') tapPower += bonus;
+                else pasIncome += bonus;
+                updateUI();
+                tg.showAlert("Satın alma başarılı!");
+                saveToCloud(); // Satın almayı anında kaydet
+            } else {
+                tg.showAlert("Yetersiz MB!");
             }
+        }
+
+        function updateUI() {
+            document.getElementById('score').innerText = Math.floor(score).toLocaleString();
+            document.getElementById('ui-tap').innerText = "+" + tapPower;
+            document.getElementById('ui-pas').innerText = pasIncome + "/s";
+        }
+
+        async function saveToCloud() {
+            try {
+                await fetch(`${SERVER_URL}/save`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ user_id: user.id.toString(), score: score })
+                });
+            } catch (e) {}
         }
 
         async function loadLeaderboard() {
@@ -93,23 +150,14 @@
                 const res = await fetch(`${SERVER_URL}/leaderboard`);
                 const list = await res.json();
                 let html = "";
-                list.forEach((player, index) => {
-                    html += `
-                        <div class="rank-item">
-                            <span><b style="color:var(--neon-purple)">#${index+1}</b> <span class="rank-name">${player.username}</span></span>
-                            <b>${Math.floor(player.score).toLocaleString()} MB</b>
-                        </div>`;
+                list.forEach((p, i) => {
+                    html += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #1a2236;">
+                                <span>#${i+1} ${p.username}</span>
+                                <b>${Math.floor(p.score).toLocaleString()} MB</b>
+                             </div>`;
                 });
                 document.getElementById('leaderboard-list').innerHTML = html;
-            } catch (e) {
-                document.getElementById('leaderboard-list').innerHTML = "Veri çekilemedi.";
-            }
-        }
-
-        function handleTap() {
-            score += 1;
-            document.getElementById('score').innerText = Math.floor(score).toLocaleString();
-            tg.HapticFeedback.impactOccurred('medium');
+            } catch (e) {}
         }
 
         function showPage(id, el) {
@@ -120,16 +168,16 @@
             if(id === 'rank-page') loadLeaderboard();
         }
 
-        // 10 Saniyede bir MacBook'a kaydet
-        setInterval(async () => {
-            try {
-                await fetch(`${SERVER_URL}/save`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ user_id: user.id.toString(), score: score })
-                });
-            } catch (e) {}
-        }, 10000);
+        // Pasif Gelir Döngüsü
+        setInterval(() => {
+            if (pasIncome > 0) {
+                score += (pasIncome / 10);
+                updateUI();
+            }
+        }, 100);
+
+        // 15 Saniyede bir MacBook senkronizasyonu
+        setInterval(saveToCloud, 15000);
 
         init();
     </script>
