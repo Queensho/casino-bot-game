@@ -3,125 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Tycoon FIX</title>
+    <title>AI Tycoon | Full Version</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-        body { background: #0d1117; color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap');
         
+        :root { --neon-blue: #00f2ff; --neon-purple: #7000ff; --glass: rgba(15, 23, 42, 0.85); }
+
+        body { 
+            background: #05070a; color: white; font-family: 'Rajdhani', sans-serif; 
+            margin: 0; display: flex; flex-direction: column; align-items: center; 
+            height: 100vh; overflow: hidden;
+        }
+
         /* Üst Panel */
         #top-stats { display: flex; justify-content: space-between; width: 92%; margin-top: 15px; gap: 10px; }
-        .stat-card { flex: 1; background: rgba(25, 31, 45, 0.8); border: 1px solid #00f2ff; border-radius: 12px; padding: 10px; text-align: center; }
-        .stat-card.purple { border-color: #7000ff; }
-        .stat-label { font-size: 10px; color: #8b949e; display: block; margin-bottom: 4px; }
-        .stat-value { font-family: 'Orbitron'; font-size: 14px; }
+        .stat-card {
+            flex: 1; background: var(--glass); border: 1px solid var(--neon-blue);
+            border-radius: 12px; padding: 10px; text-align: center; box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+        }
+        .stat-card.purple { border-color: var(--neon-purple); box-shadow: 0 0 15px rgba(112, 0, 255, 0.1); }
+        .label { font-size: 9px; color: #8b949e; display: block; margin-bottom: 2px; font-weight: bold; }
+        .value { font-family: 'Orbitron'; font-size: 13px; color: #fff; }
 
-        /* Skor ve Buton */
-        #score-container { margin-top: 40px; text-align: center; }
-        #score { font-family: 'Orbitron'; font-size: 45px; font-weight: bold; color: #fff; text-shadow: 0 0 15px #00f2ff; }
-        #main-btn { width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, #1a103d, #0d1117); border: 3px solid #7000ff; font-size: 80px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 30px; box-shadow: 0 0 30px rgba(112, 0, 255, 0.4); transition: transform 0.05s; }
-        #main-btn:active { transform: scale(0.95); }
+        /* Ana Ekran */
+        #main-display { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+        #score-main { font-family: 'Orbitron'; font-size: 42px; font-weight: bold; color: #fff; margin-bottom: 25px; }
+        #score-main span { color: var(--neon-blue); font-size: 20px; }
 
-        /* Kartlar (Alt Menü) */
-        #bottom-area { position: fixed; bottom: 0; width: 100%; background: #0d1117; border-top: 1px solid #1a2236; padding-bottom: 20px; }
-        #card-list { display: flex; overflow-x: auto; padding: 15px; gap: 15px; }
-        .card { min-width: 130px; background: #1c2128; border: 1px solid #30363d; border-radius: 15px; padding: 12px; text-align: center; }
-        .card img { width: 40px; margin-bottom: 8px; }
-        .buy-btn { background: #00f2ff; color: #000; border: none; width: 100%; padding: 8px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        #brain-container { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
+        #brain-glow { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid var(--neon-purple); box-shadow: 0 0 30px var(--neon-purple); animation: pulse 2s infinite; }
+        #brain-btn { width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, #1a103d, #05070a); display: flex; align-items: center; justify-content: center; font-size: 80px; cursor: pointer; z-index: 2; transition: 0.05s; }
+        #brain-btn:active { transform: scale(0.92); }
+
+        /* Modallar (Sekme Panelleri) */
+        .panel { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 85vh; 
+            background: #05070a; z-index: 100; display: none; 
+            flex-direction: column; align-items: center; padding-top: 20px;
+            overflow-y: auto;
+        }
+        .panel-header { font-family: 'Orbitron'; font-size: 20px; color: var(--neon-blue); margin-bottom: 20px; }
+        
+        /* Kart Stilleri */
+        .item-row { 
+            width: 90%; background: var(--glass); border: 1px solid #1a2236; 
+            border-radius: 15px; padding: 15px; margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .item-info b { display: block; color: #fff; font-size: 14px; }
+        .item-info small { color: #8b949e; font-size: 11px; }
+        .action-btn { 
+            background: var(--neon-blue); color: #000; border: none; 
+            padding: 10px 15px; border-radius: 10px; font-weight: bold; cursor: pointer;
+        }
+        .action-btn:disabled { background: #334155; color: #8b949e; }
+
+        /* Alt Navigasyon */
+        #nav-bar { 
+            width: 100%; background: #0d1117; display: flex; 
+            border-top: 1px solid #1a2236; padding: 15px 0; z-index: 200;
+        }
+        .nav-item { flex: 1; text-align: center; color: #4b5563; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .nav-item.active { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
+
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.15); opacity: 0; } }
     </style>
 </head>
 <body>
 
     <div id="top-stats">
         <div class="stat-card">
-            <span class="stat-label">TIK GÜCÜ</span>
-            <span class="stat-value" id="ui-tap">+1</span>
+            <span class="label">TIK GÜCÜ</span>
+            <span class="value" id="tap-val">+1</span>
         </div>
         <div class="stat-card purple">
-            <span class="stat-label">PASİF/SN</span>
-            <span class="stat-value" id="ui-pas">0</span>
+            <span class="label">OTOMATİK</span>
+            <span class="value" id="pas-val">0/s</span>
         </div>
     </div>
 
-    <div id="score-container">
-        <div id="score">0</div>
-        <div style="font-size: 12px; color: #00f2ff;">MB DATA</div>
+    <div id="main-display" style="display: flex; flex-direction: column; align-items: center; flex: 1; justify-content: center; width: 100%;">
+        <div id="score-main"><span id="score-val">0</span><span> MB</span></div>
+        <div id="brain-container">
+            <div id="brain-glow"></div>
+            <div id="brain-btn" onclick="handleTap(event)">🧠</div>
+        </div>
     </div>
 
-    <div id="main-btn" onclick="doTap()">🧠</div>
-
-    <div id="bottom-area">
-        <div id="card-list">
-            <div class="card">
-                <img src="https://cdn-icons-png.flaticon.com/512/3660/3660007.png">
-                <div style="font-size:12px;">GPU V1</div>
-                <button class="buy-btn" onclick="buyItem('tap', 100, 2)">100 MB</button>
-            </div>
-            <div class="card">
-                <img src="https://cdn-icons-png.flaticon.com/512/3067/3067866.png">
-                <div style="font-size:12px;">SERVER</div>
-                <button class="buy-btn" onclick="buyItem('pas', 500, 5)">500 MB</button>
-            </div>
-            <div class="card">
-                <img src="https://cdn-icons-png.flaticon.com/512/5777/5777995.png">
-                <div style="font-size:12px;">KUANTUM</div>
-                <button class="buy-btn" onclick="buyItem('pas', 2000, 25)">2000 MB</button>
-            </div>
+    <div id="market-panel" class="panel">
+        <div class="panel-header">TEKNOLOJİ MARKETİ</div>
+        <div class="item-row">
+            <div class="item-info"><b>Nvidia RTX 5090</b><small>+5 Tık Gücü</small></div>
+            <button class="action-btn" onclick="buy('tap', 1000, 5)">1.000 MB</button>
         </div>
+        <div class="item-row">
+            <div class="item-info"><b>Kuantum Sunucu</b><small>+20 Pasif/sn</small></div>
+            <button class="action-btn" onclick="buy('pas', 5000, 20)">5.000 MB</button>
+        </div>
+        <div class="item-row">
+            <div class="item-info"><b>AI Veri Merkezi</b><small>+150 Pasif/sn</small></div>
+            <button class="action-btn" onclick="buy('pas', 25000, 150)">25.000 MB</button>
+        </div>
+    </div>
+
+    <div id="tasks-panel" class="panel">
+        <div class="panel-header">GÜNLÜK GÖREVLER</div>
+        <div class="item-row">
+            <div class="item-info"><b>Telegram Kanalı</b><small>+50.000 MB Ödül</small></div>
+            <button id="t1" class="action-btn" onclick="doTask('t1', 'https://t.me/KanalLinkin', 50000)">KATIL</button>
+        </div>
+        <div class="item-row">
+            <div class="item-info"><b>X (Twitter) Takip</b><small>+30.000 MB Ödül</small></div>
+            <button id="t2" class="action-btn" onclick="doTask('t2', 'https://x.com/Hesabın', 30000)">TAKİP ET</button>
+        </div>
+    </div>
+
+    <div id="nav-bar">
+        <div class="nav-item" onclick="showPanel('market-panel')">🛠 MARKET</div>
+        <div id="home-nav" class="nav-item active" onclick="showPanel('main')">🏠 ANA</div>
+        <div class="nav-item" onclick="showPanel('tasks-panel')">🎁 GÖREVLER</div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Verileri Yükle
-        let score = parseFloat(localStorage.getItem('f_score')) || 0;
-        let tap = parseInt(localStorage.getItem('f_tap')) || 1;
-        let passive = parseInt(localStorage.getItem('f_pas')) || 0;
+        let score = parseFloat(localStorage.getItem('ai_final_score')) || 0;
+        let tap = parseInt(localStorage.getItem('ai_final_tap')) || 1;
+        let pas = parseInt(localStorage.getItem('ai_final_pas')) || 0;
 
         function updateUI() {
-            document.getElementById('score').innerText = Math.floor(score).toLocaleString();
-            document.getElementById('ui-tap').innerText = "+" + tap;
-            document.getElementById('ui-pas').innerText = passive.toLocaleString();
+            document.getElementById('score-val').innerText = Math.floor(score).toLocaleString();
+            document.getElementById('tap-val').innerText = "+" + tap;
+            document.getElementById('pas-val').innerText = pas + "/s";
+            
+            // Tamamlanan görevleri kontrol et
+            if(localStorage.getItem('t1')) { document.getElementById('t1').innerText = "BİTTİ"; document.getElementById('t1').disabled = true; }
+            if(localStorage.getItem('t2')) { document.getElementById('t2').innerText = "BİTTİ"; document.getElementById('t2').disabled = true; }
         }
 
-        function doTap() {
+        function handleTap(e) {
             score += tap;
             tg.HapticFeedback.impactOccurred('medium');
-            updateUI();
-            save();
+            updateUI(); save();
         }
 
-        function buyItem(type, cost, bonus) {
-            if (score >= cost) {
-                score -= cost;
-                if (type === 'tap') tap += bonus;
-                else passive += bonus;
-                
-                tg.HapticFeedback.notificationOccurred('success');
-                tg.showAlert("Yükseltme Alındı!");
-                updateUI();
-                save();
+        function showPanel(id) {
+            document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('main-display').style.display = 'none';
+
+            if(id === 'main') {
+                document.getElementById('main-display').style.display = 'flex';
+                document.getElementById('home-nav').classList.add('active');
             } else {
-                tg.showAlert("Yetersiz Bakiye! Daha fazla tıkla.");
+                document.getElementById(id).style.display = 'flex';
+                event.currentTarget.classList.add('active');
             }
+        }
+
+        function buy(type, cost, bonus) {
+            if(score >= cost) {
+                score -= cost;
+                if(type === 'tap') tap += bonus;
+                else pas += bonus;
+                tg.HapticFeedback.notificationOccurred('success');
+                updateUI(); save();
+            } else {
+                tg.showAlert("Yetersiz MB!");
+            }
+        }
+
+        function doTask(id, link, reward) {
+            tg.openLink(link);
+            setTimeout(() => {
+                score += reward;
+                localStorage.setItem(id, 'true');
+                updateUI(); save();
+                tg.showAlert(reward + " MB Hesabına Eklendi!");
+            }, 3000);
         }
 
         function save() {
-            localStorage.setItem('f_score', score);
-            localStorage.setItem('f_tap', tap);
-            localStorage.setItem('f_pas', passive);
+            localStorage.setItem('ai_final_score', score);
+            localStorage.setItem('ai_final_tap', tap);
+            localStorage.setItem('ai_final_pas', pas);
         }
 
-        // Pasif Gelir (Saniyede bir)
-        setInterval(() => {
-            if (passive > 0) {
-                score += passive;
-                updateUI();
-                save();
-            }
-        }, 1000);
-
+        setInterval(() => { if(pas > 0) { score += (pas / 10); updateUI(); } }, 100);
         updateUI();
     </script>
 </body>
