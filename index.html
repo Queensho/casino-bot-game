@@ -3,155 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Tycoon | FIX</title>
+    <title>AI Tycoon FIX</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        body { background: #0d1117; color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; }
         
-        body { background: #0d1117; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; }
-        
-        /* Üst Bilgi */
-        #top-stats { display: flex; justify-content: space-between; width: 90%; margin-top: 20px; gap: 10px; }
-        .stat-card { flex: 1; background: rgba(25, 31, 45, 0.8); border: 1px solid #00f2ff; border-radius: 15px; padding: 10px; text-align: center; box-shadow: 0 0 10px rgba(0,242,255,0.2); }
+        /* Üst Panel */
+        #top-stats { display: flex; justify-content: space-between; width: 92%; margin-top: 15px; gap: 10px; }
+        .stat-card { flex: 1; background: rgba(25, 31, 45, 0.8); border: 1px solid #00f2ff; border-radius: 12px; padding: 10px; text-align: center; }
         .stat-card.purple { border-color: #7000ff; }
-        .stat-label { font-size: 9px; color: #8b949e; display: block; margin-bottom: 3px; font-weight: bold; }
-        .stat-value { font-family: 'Orbitron'; font-size: 13px; color: #fff; }
+        .stat-label { font-size: 10px; color: #8b949e; display: block; margin-bottom: 4px; }
+        .stat-value { font-family: 'Orbitron'; font-size: 14px; }
 
-        /* Ana Alan */
-        #main-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
-        #score-display { font-family: 'Orbitron'; font-size: 40px; font-weight: bold; margin-bottom: 20px; text-shadow: 0 0 15px #00f2ff; }
-        #score-display span { color: #00f2ff; font-size: 18px; }
+        /* Skor ve Buton */
+        #score-container { margin-top: 40px; text-align: center; }
+        #score { font-family: 'Orbitron'; font-size: 45px; font-weight: bold; color: #fff; text-shadow: 0 0 15px #00f2ff; }
+        #main-btn { width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, #1a103d, #0d1117); border: 3px solid #7000ff; font-size: 80px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 30px; box-shadow: 0 0 30px rgba(112, 0, 255, 0.4); transition: transform 0.05s; }
+        #main-btn:active { transform: scale(0.95); }
 
-        #ai-hub {
-            width: 170px; height: 170px; border-radius: 50%;
-            background: radial-gradient(circle, #1a103d 0%, #0d1117 100%);
-            border: 3px solid #7000ff; display: flex; align-items: center; justify-content: center;
-            font-size: 80px; cursor: pointer; position: relative; box-shadow: 0 0 30px rgba(112, 0, 255, 0.4);
-            transition: transform 0.05s;
-        }
-        #ai-hub:active { transform: scale(0.92); }
-
-        /* Alt Kartlar (Yatay Kaydırma) */
-        #bottom-scroll { width: 100%; overflow-x: auto; display: flex; gap: 15px; padding: 20px; background: rgba(13, 17, 23, 0.9); border-top: 1px solid #1a2236; }
-        .item-card { min-width: 130px; background: #1c2128; border-radius: 15px; padding: 12px; border: 1px solid #30363d; text-align: center; position: relative; }
-        .item-card img { width: 45px; height: 45px; margin-bottom: 8px; filter: drop-shadow(0 0 5px #00f2ff); }
-        .item-name { font-size: 11px; font-weight: bold; display: block; margin-bottom: 5px; color: #fff; }
-        
-        .buy-btn { 
-            background: #00f2ff; color: #000; border: none; width: 100%; 
-            padding: 8px; border-radius: 8px; font-size: 10px; font-weight: bold; cursor: pointer;
-        }
-        .buy-btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
-
-        #navbar { width: 100%; background: #0d1117; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #1a2236; }
-        .nav-link { font-size: 10px; color: #8b949e; text-align: center; }
-        .nav-link.active { color: #00f2ff; font-weight: bold; }
+        /* Kartlar (Alt Menü) */
+        #bottom-area { position: fixed; bottom: 0; width: 100%; background: #0d1117; border-top: 1px solid #1a2236; padding-bottom: 20px; }
+        #card-list { display: flex; overflow-x: auto; padding: 15px; gap: 15px; }
+        .card { min-width: 130px; background: #1c2128; border: 1px solid #30363d; border-radius: 15px; padding: 12px; text-align: center; }
+        .card img { width: 40px; margin-bottom: 8px; }
+        .buy-btn { background: #00f2ff; color: #000; border: none; width: 100%; padding: 8px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; }
     </style>
 </head>
 <body>
 
     <div id="top-stats">
         <div class="stat-card">
-            <span class="stat-label">⚡ TIK GÜCÜ</span>
-            <span class="stat-value" id="tap-val">+1</span>
+            <span class="stat-label">TIK GÜCÜ</span>
+            <span class="stat-value" id="ui-tap">+1</span>
         </div>
         <div class="stat-card purple">
-            <span class="stat-label">⚙️ SAATLİK KAZANÇ</span>
-            <span class="stat-value" id="pps-val">0/s</span>
+            <span class="stat-label">PASİF/SN</span>
+            <span class="stat-value" id="ui-pas">0</span>
         </div>
     </div>
 
-    <div id="main-area">
-        <div id="score-display"><span id="score">0</span> <span>MB</span></div>
-        <div id="ai-hub" onclick="handleTap(event)">🧠</div>
+    <div id="score-container">
+        <div id="score">0</div>
+        <div style="font-size: 12px; color: #00f2ff;">MB DATA</div>
     </div>
 
-    <div id="bottom-scroll" id="card-container">
-        </div>
+    <div id="main-btn" onclick="doTap()">🧠</div>
 
-    <div id="navbar">
-        <div class="nav-link active">🏠 ANA EKRAN</div>
-        <div class="nav-link">🛠 MARKET</div>
-        <div class="nav-link">🎁 GÖREVLER</div>
+    <div id="bottom-area">
+        <div id="card-list">
+            <div class="card">
+                <img src="https://cdn-icons-png.flaticon.com/512/3660/3660007.png">
+                <div style="font-size:12px;">GPU V1</div>
+                <button class="buy-btn" onclick="buyItem('tap', 100, 2)">100 MB</button>
+            </div>
+            <div class="card">
+                <img src="https://cdn-icons-png.flaticon.com/512/3067/3067866.png">
+                <div style="font-size:12px;">SERVER</div>
+                <button class="buy-btn" onclick="buyItem('pas', 500, 5)">500 MB</button>
+            </div>
+            <div class="card">
+                <img src="https://cdn-icons-png.flaticon.com/512/5777/5777995.png">
+                <div style="font-size:12px;">KUANTUM</div>
+                <button class="buy-btn" onclick="buyItem('pas', 2000, 25)">2000 MB</button>
+            </div>
+        </div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        // DEĞİŞKENLER (Veri kaybını önlemek için yeni keyler)
-        let score = parseFloat(localStorage.getItem('v3_score')) || 0;
-        let tap = parseInt(localStorage.getItem('v3_tap')) || 1;
-        let passive = parseFloat(localStorage.getItem('v3_pas')) || 0;
-
-        const cards = [
-            { id: 1, name: "GPU V1", price: 100, bonus: 2, type: 'tap', img: "https://cdn-icons-png.flaticon.com/512/3660/3660007.png" },
-            { id: 2, name: "SUNUCU", price: 500, bonus: 10, type: 'pas', img: "https://cdn-icons-png.flaticon.com/512/3067/3067866.png" },
-            { id: 3, name: "KUANTUM", price: 2000, bonus: 50, type: 'pas', img: "https://cdn-icons-png.flaticon.com/512/5777/5777995.png" }
-        ];
+        // Verileri Yükle
+        let score = parseFloat(localStorage.getItem('f_score')) || 0;
+        let tap = parseInt(localStorage.getItem('f_tap')) || 1;
+        let passive = parseInt(localStorage.getItem('f_pas')) || 0;
 
         function updateUI() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString();
-            document.getElementById('tap-val').innerText = "+" + tap;
-            document.getElementById('pps-val').innerText = Math.floor(passive * 10).toLocaleString() + "/s";
-            renderCards();
+            document.getElementById('ui-tap').innerText = "+" + tap;
+            document.getElementById('ui-pas').innerText = passive.toLocaleString();
         }
 
-        function renderCards() {
-            const container = document.getElementById('bottom-scroll');
-            container.innerHTML = ''; // Temizle ve yeniden çiz
-            
-            cards.forEach(card => {
-                const cardDiv = document.createElement('div');
-                cardDiv.className = 'item-card';
-                const canBuy = score >= card.price;
-                
-                cardDiv.innerHTML = `
-                    <img src="${card.img}">
-                    <span class="item-name">${card.name}</span>
-                    <button class="buy-btn" ${canBuy ? '' : 'disabled'} onclick="buyCard(${card.id})">
-                        ${card.price} MB
-                    </button>
-                `;
-                container.appendChild(cardDiv);
-            });
-        }
-
-        function handleTap(e) {
+        function doTap() {
             score += tap;
             tg.HapticFeedback.impactOccurred('medium');
             updateUI();
             save();
         }
 
-        function buyCard(id) {
-            const card = cards.find(c => c.id === id);
-            if (score >= card.price) {
-                score -= card.price;
-                if (card.type === 'tap') {
-                    tap += card.bonus;
-                } else {
-                    passive += (card.bonus / 10);
-                }
+        function buyItem(type, cost, bonus) {
+            if (score >= cost) {
+                score -= cost;
+                if (type === 'tap') tap += bonus;
+                else passive += bonus;
+                
                 tg.HapticFeedback.notificationOccurred('success');
+                tg.showAlert("Yükseltme Alındı!");
                 updateUI();
                 save();
             } else {
-                tg.showAlert("Yetersiz MB!");
+                tg.showAlert("Yetersiz Bakiye! Daha fazla tıkla.");
             }
         }
 
         function save() {
-            localStorage.setItem('v3_score', score);
-            localStorage.setItem('v3_tap', tap);
-            localStorage.setItem('v3_pas', passive);
+            localStorage.setItem('f_score', score);
+            localStorage.setItem('f_tap', tap);
+            localStorage.setItem('f_pas', passive);
         }
 
-        // Pasif Kazanç Döngüsü
+        // Pasif Gelir (Saniyede bir)
         setInterval(() => {
             if (passive > 0) {
                 score += passive;
                 updateUI();
+                save();
             }
         }, 1000);
 
