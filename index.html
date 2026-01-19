@@ -28,21 +28,22 @@
         #brain-btn { width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, #1a103d, #05070a); display: flex; align-items: center; justify-content: center; font-size: 80px; cursor: pointer; border: 2px solid var(--neon-purple); box-shadow: 0 0 20px var(--neon-purple); transition: 0.1s; }
         #brain-btn:active { transform: scale(0.92); }
 
-        /* Sıralama Listesi */
-        .rank-item { width: 90%; background: rgba(30, 41, 59, 0.5); border-radius: 12px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #1a2236; }
+        /* Liste Kartları */
+        .rank-item, .item-card { width: 95%; background: rgba(30, 41, 59, 0.5); border-radius: 12px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #1a2236; }
         .rank-num { color: var(--neon-blue); font-weight: bold; margin-right: 10px; }
 
         /* Çark */
         #wheel-container { position: relative; width: 220px; height: 220px; margin: 20px 0; }
         #wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--neon-blue); transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); background: conic-gradient(#1a103d 0deg 60deg, #7000ff 60deg 120deg, #00f2ff 120deg 180deg, #1a103d 180deg 240deg, #7000ff 240deg 300deg, #00f2ff 300deg 360deg); }
 
-        /* Alt Nav */
+        /* Alt Navigasyon */
         #navbar { position: fixed; bottom: 0; width: 100%; background: #0d1117; display: flex; border-top: 1px solid #1a2236; padding: 12px 0; }
-        .nav-item { flex: 1; text-align: center; color: #4b5563; font-size: 10px; font-weight: bold; }
+        .nav-item { flex: 1; text-align: center; color: #4b5563; font-size: 10px; font-weight: bold; cursor: pointer; }
         .nav-item.active { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
         .nav-icon { font-size: 20px; display: block; }
 
         .btn-action { background: var(--neon-blue); color: #000; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; width: 80%; }
+        #sync-status { font-size: 10px; color: #4b5563; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -61,52 +62,56 @@
     <div id="home-page" class="page active">
         <div id="score-main"><span id="score">0</span> <small style="font-size:14px; color:var(--neon-blue)">MB</small></div>
         <div id="brain-btn" onclick="handleTap()">🧠</div>
-        <button class="btn-action" style="background: gold;" onclick="showPage('spin-page', document.getElementById('nav-spin'))">🎡 ŞANSLI ÇARK</button>
+        <div id="sync-status">Bulut senkronizasyonu aktif...</div>
+    </div>
+
+    <div id="market-page" class="page">
+        <h2 style="font-family:Orbitron; color:var(--neon-blue);">YÜKSELTMELER</h2>
+        <div class="item-card">
+            <div><b>GPU V1</b><br><small>+5 Tık Gücü</small></div>
+            <button class="btn-action" style="width:auto;" onclick="buy('tap', 1000, 5)">1K MB</button>
+        </div>
+        <div class="item-card">
+            <div><b>Sunucu</b><br><small>+20 Pasif/s</small></div>
+            <button class="btn-action" style="width:auto;" onclick="buy('pas', 5000, 20)">5K MB</button>
+        </div>
     </div>
 
     <div id="rank-page" class="page">
         <h2 style="font-family:Orbitron; color:var(--neon-blue);">GLOBAL LİDERLER</h2>
-        <div class="rank-item"><span><span class="rank-num">#1</span> Master_AI</span><b>950.4M MB</b></div>
-        <div class="rank-item"><span><span class="rank-num">#2</span> CryptoKing</span><b>420.1M MB</b></div>
-        <div class="rank-item"><span><span class="rank-num">#3</span> Boss_Tyrant</span><b>120.5M MB</b></div>
-        <div class="rank-item" style="border: 1px solid gold;"><span><span class="rank-num">#Sen</span> Sen</span><b id="your-rank">0 MB</b></div>
+        <div id="leaderboard-list" style="width:100%; display:flex; flex-direction:column; align-items:center;">
+            <p>Yükleniyor...</p>
+        </div>
     </div>
 
     <div id="spin-page" class="page">
-        <h2 style="font-family:Orbitron; color:var(--neon-purple);">DAILY SPIN</h2>
-        <div id="wheel-container">
-            <div id="wheel"></div>
-        </div>
+        <h2 style="font-family:Orbitron; color:var(--neon-purple);">LUCKY WHEEL</h2>
+        <div id="wheel-container"><div id="wheel"></div></div>
         <button id="spin-btn" class="btn-action" onclick="spinWheel()">ÇEVİR</button>
-    </div>
-
-    <div id="ref-page" class="page">
-        <h2 style="font-family:Orbitron; color:var(--neon-blue);">ARKADAŞLAR</h2>
-        <div class="stat-card" style="width: 90%; margin-bottom: 20px;">
-            <p>Her davet için <b>500.000 MB</b> kazanırsın!</p>
-        </div>
-        <button class="btn-action" onclick="invite()">ARKADAŞINI DAVET ET</button>
     </div>
 
     <div id="navbar">
         <div class="nav-item active" onclick="showPage('home-page', this)"><span class="nav-icon">🏠</span>ANA</div>
-        <div class="nav-item" onclick="showPage('rank-page', this)"><span class="nav-icon">🏆</span>LİDERLER</div>
-        <div id="nav-spin" class="nav-item" onclick="showPage('spin-page', this)"><span class="nav-icon">🎡</span>ÇARK</div>
-        <div class="nav-item" onclick="showPage('ref-page', this)"><span class="nav-icon">👥</span>REF</div>
+        <div class="nav-item" onclick="showPage('market-page', this)"><span class="nav-icon">🛠</span>MARKET</div>
+        <div class="nav-item" onclick="showPage('rank-page', this)"><span class="nav-icon">🏆</span>SIRALAMA</div>
+        <div class="nav-item" onclick="showPage('spin-page', this)"><span class="nav-icon">🎡</span>ÇARK</div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
+        let user = tg.initDataUnsafe.user || { id: "000", first_name: "User" };
 
-        let score = parseFloat(localStorage.getItem('final_score')) || 0;
-        let tap = 1;
-        let pas = 0;
+        // DİKKAT: MacBook IP'nizi veya ngrok linkinizi buraya yazın
+        const SERVER_URL = "https://SENIN_NGROK_LINKIN.ngrok-free.app/sync";
+
+        let score = parseFloat(localStorage.getItem('g_score')) || 0;
+        let tap = parseInt(localStorage.getItem('g_tap')) || 1;
+        let pas = parseInt(localStorage.getItem('g_pas')) || 0;
         let isSpinning = false;
 
         function updateUI() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString();
-            document.getElementById('your-rank').innerText = Math.floor(score).toLocaleString() + " MB";
             document.getElementById('ui-tap').innerText = "+" + tap;
             document.getElementById('ui-pas').innerText = pas + "/s";
         }
@@ -115,14 +120,25 @@
             score += tap;
             tg.HapticFeedback.impactOccurred('medium');
             updateUI();
-            localStorage.setItem('final_score', score);
+            saveLocal();
         }
 
         function showPage(id, el) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            if(el) el.classList.add('active');
+            el.classList.add('active');
+            if(id === 'rank-page') syncData(); // Sıralama sayfasını açınca güncelle
+        }
+
+        function buy(type, cost, bonus) {
+            if(score >= cost) {
+                score -= cost;
+                if(type === 'tap') tap += bonus;
+                else pas += bonus;
+                updateUI(); saveLocal();
+                syncData();
+            } else { tg.showAlert("MB Yetersiz!"); }
         }
 
         function spinWheel() {
@@ -131,22 +147,56 @@
             const wheel = document.getElementById('wheel');
             const deg = Math.floor(Math.random() * 360) + 3600;
             wheel.style.transform = `rotate(${deg}deg)`;
-            
             setTimeout(() => {
                 isSpinning = false;
-                let prize = 100000;
-                score += prize;
-                tg.showAlert("Tebrikler! " + prize.toLocaleString() + " MB kazandın!");
-                updateUI();
-                localStorage.setItem('final_score', score);
+                score += 50000; updateUI(); saveLocal();
+                tg.showAlert("Tebrikler! 50.000 MB Kazandın!");
             }, 4000);
         }
 
-        function invite() {
-            let link = "https://t.me/SeninBotLinkin?start=" + tg.initDataUnsafe.user.id;
-            tg.openTelegramLink("https://t.me/share/url?url=" + encodeURIComponent(link) + "&text=AI Tycoon'da imparatorluğunu kur!");
+        function saveLocal() {
+            localStorage.setItem('g_score', score);
+            localStorage.setItem('g_tap', tap);
+            localStorage.setItem('g_pas', pas);
         }
 
+        // --- BACKEND SENKRONİZASYONU ---
+        async function syncData() {
+            try {
+                const response = await fetch(SERVER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: user.id.toString(),
+                        username: user.first_name,
+                        score: score
+                    })
+                });
+                const data = await response.json();
+                if(data.status === "ok") {
+                    score = data.verified_score; // Sunucunun onayladığı puan
+                    renderLeaderboard(data.leaderboard);
+                    document.getElementById('sync-status').innerText = "✅ Senkronize Edildi";
+                }
+            } catch (e) {
+                document.getElementById('sync-status').innerText = "⚠️ MacBook Bağlantısı Yok";
+            }
+        }
+
+        function renderLeaderboard(list) {
+            let container = document.getElementById('leaderboard-list');
+            container.innerHTML = "";
+            list.forEach((p, i) => {
+                container.innerHTML += `
+                    <div class="rank-item">
+                        <span><span class="rank-num">#${i+1}</span> ${p.name}</span>
+                        <b>${Math.floor(p.score).toLocaleString()} MB</b>
+                    </div>`;
+            });
+        }
+
+        setInterval(() => { if(pas > 0) { score += (pas / 10); updateUI(); } }, 100);
+        setInterval(syncData, 15000); // 15 saniyede bir yedekle
         updateUI();
     </script>
 </body>
