@@ -14,12 +14,15 @@
         #score { font-family: 'Orbitron', sans-serif; font-size: 40px; font-weight: bold; text-shadow: 0 0 20px #00f2ff; margin-top: 20px; }
         #ai-hub { font-size: 100px; margin-top: 30px; cursor: pointer; transition: transform 0.1s; }
         #ai-hub:active { transform: scale(0.9); }
-        .modal { position: fixed; bottom: 70px; width: 100%; background: #0f172a; border-radius: 20px 20px 0 0; border-top: 2px solid #7000ff; padding: 20px 0; display: none; z-index: 100; }
+        
+        .modal { position: fixed; bottom: 70px; width: 100%; background: #0f172a; border-radius: 20px 20px 0 0; border-top: 2px solid #7000ff; padding: 20px 0; display: none; z-index: 100; max-height: 60vh; overflow-y: auto; }
         .card { background: #1e293b; margin: 10px 20px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
         .btn { background: #7000ff; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-done { background: #1abd44; }
+        
         #nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #05070a; border-top: 1px solid #1a2236; padding: 15px 0; }
-        .nav-item { flex: 1; text-align: center; font-size: 11px; color: #64748b; cursor: pointer; }
-        .active { color: #00f2ff; }
+        .nav-item { flex: 1; text-align: center; font-size: 10px; color: #64748b; cursor: pointer; }
+        .active { color: #00f2ff; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -34,29 +37,39 @@
 
     <div id="ai-hub" onclick="handleTap(event)">🚀</div>
 
-    <div id="friends-modal" class="modal">
-        <h3 style="text-align: center; margin-top: 0;">DAVET ET & KAZAN</h3>
-        <p style="text-align: center; font-size: 12px; padding: 0 20px; color: #8b949e;">Arkadaşını davet et, ikiniz de 100.000 MB kazanın!</p>
+    <div id="tasks-modal" class="modal">
+        <h3 style="text-align: center; margin-top: 0;">VERİ MADENCİLİĞİ</h3>
         <div class="card">
-            <div style="font-size: 11px; color: #00f2ff;" id="ref-link">Yükleniyor...</div>
-            <button class="btn" onclick="copyRef()">KOPYALA</button>
+            <div><b>Telegram Kanalı</b><br><small>+50.000 MB</small></div>
+            <button id="task1-btn" class="btn" onclick="doTask('task1', 'https://t.me/KANAL_LINKIN', 50000)">KATIL</button>
         </div>
-        <button onclick="toggleModal('friends-modal', false)" style="width: 90%; margin: 10px 5%; background: #334155; border: none; color: white; padding: 10px; border-radius: 8px;">KAPAT</button>
+        <div class="card">
+            <div><b>X (Twitter) Takip</b><br><small>+30.000 MB</small></div>
+            <button id="task2-btn" class="btn" onclick="doTask('task2', 'https://x.com/HESAP_LINKIN', 30000)">TAKİP ET</button>
+        </div>
+        <button onclick="toggleModal('', false)" style="width: 90%; margin: 10px 5%; background: #334155; border: none; color: white; padding: 10px; border-radius: 8px;">KAPAT</button>
     </div>
 
     <div id="shop-modal" class="modal">
-        <h3 style="text-align: center; margin-top: 0;">TEKNOLOJİ MARKETİ</h3>
+        <h3 style="text-align: center; margin-top: 0;">MARKET</h3>
         <div class="card">
-            <div><b>GPU V1</b><br><small>+5 Pasif/sn (5000 MB)</small></div>
-            <button class="btn" onclick="buy('passive', 5000, 5)">SATIN AL</button>
+            <div><b>GPU V1</b><br><small>+5/sn (5000 MB)</small></div>
+            <button class="btn" onclick="buy('passive', 5000, 5)">AL</button>
         </div>
-        <button onclick="toggleModal('shop-modal', false)" style="width: 90%; margin: 10px 5%; background: #334155; border: none; color: white; padding: 10px; border-radius: 8px;">KAPAT</button>
+        <button onclick="toggleModal('', false)" style="width: 90%; margin: 10px 5%; background: #334155; border: none; color: white; padding: 10px; border-radius: 8px;">KAPAT</button>
+    </div>
+
+    <div id="friends-modal" class="modal">
+        <h3 style="text-align: center; margin-top: 0;">EKİBİNİ KUR</h3>
+        <div class="card"><div id="ref-link" style="font-size: 10px;">Yükleniyor...</div><button class="btn" onclick="copyRef()">KOPYALA</button></div>
+        <button onclick="toggleModal('', false)" style="width: 90%; margin: 10px 5%; background: #334155; border: none; color: white; padding: 10px; border-radius: 8px;">KAPAT</button>
     </div>
 
     <div id="nav">
-        <div class="nav-item active" onclick="toggleModal('', false)">💻 ANA</div>
         <div class="nav-item" onclick="toggleModal('shop-modal', true)">🛠 MARKET</div>
-        <div class="nav-item" onclick="toggleModal('friends-panel', true)">👥 EKİP</div>
+        <div class="nav-item" onclick="toggleModal('tasks-modal', true)">🎁 GÖREVLER</div>
+        <div class="nav-item active" onclick="toggleModal('', false)">💻 ANA</div>
+        <div class="nav-item" onclick="toggleModal('friends-modal', true)">👥 EKİP</div>
     </div>
 
     <script>
@@ -64,25 +77,19 @@
         tg.expand();
         let user = tg.initDataUnsafe.user;
 
-        // URL'den bonusu kontrol et
-        const urlParams = new URLSearchParams(window.location.search);
-        let bonus = parseInt(urlParams.get('bonus')) || 0;
-
-        let score = parseFloat(localStorage.getItem('ty_v2_score')) || 0;
-        if (bonus > 0 && !localStorage.getItem('bonus_claimed')) {
-            score += bonus;
-            localStorage.setItem('bonus_claimed', 'true');
-            tg.showAlert("Hoş geldin hediyesi: 100.000 MB tanımlandı!");
-        }
-
-        let tapPower = parseInt(localStorage.getItem('ty_v2_tap')) || 1;
-        let passive = parseInt(localStorage.getItem('ty_v2_pas')) || 0;
+        let score = parseFloat(localStorage.getItem('ty_v3_score')) || 0;
+        let tapPower = parseInt(localStorage.getItem('ty_v3_tap')) || 1;
+        let passive = parseInt(localStorage.getItem('ty_v3_pas')) || 0;
 
         function updateUI() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString();
             document.getElementById('tap-val').innerText = "+" + tapPower;
             document.getElementById('pps-val').innerText = passive + "/s";
-            document.getElementById('ref-link').innerText = "t.me/BOT_ADIN?start=" + (user ? user.id : "boss");
+            document.getElementById('ref-link').innerText = "t.me/BOT_KULLANICI_ADI?start=" + (user ? user.id : "boss");
+            
+            // Tamamlanan görevleri kontrol et
+            if(localStorage.getItem('task1')) { document.getElementById('task1-btn').innerText = "ALINDI"; document.getElementById('task1-btn').className = "btn btn-done"; }
+            if(localStorage.getItem('task2')) { document.getElementById('task2-btn').innerText = "ALINDI"; document.getElementById('task2-btn').className = "btn btn-done"; }
         }
 
         function handleTap(e) {
@@ -90,6 +97,18 @@
             tg.HapticFeedback.impactOccurred('light');
             updateUI();
             save();
+        }
+
+        function doTask(taskId, link, reward) {
+            if (localStorage.getItem(taskId)) return;
+            tg.openLink(link);
+            setTimeout(() => {
+                score += reward;
+                localStorage.setItem(taskId, 'true');
+                updateUI();
+                save();
+                tg.showAlert("Ödül Hesabına Tanımlandı: " + reward + " MB!");
+            }, 3000);
         }
 
         function toggleModal(id, show) {
@@ -102,23 +121,21 @@
                 score -= cost;
                 if (type === 'passive') passive += amount;
                 updateUI(); save();
-                tg.showAlert("İşlem Başarılı!");
+                tg.showAlert("Başarılı!");
             } else { tg.showAlert("Yetersiz Veri!"); }
         }
 
         function copyRef() {
-            let link = document.getElementById('ref-link').innerText;
-            const el = document.createElement('textarea');
-            el.value = "https://" + link;
+            let link = "https://" + document.getElementById('ref-link').innerText;
+            const el = document.createElement('textarea'); el.value = link;
             document.body.appendChild(el); el.select(); document.execCommand('copy');
-            document.body.removeChild(el);
-            tg.showAlert("Davet linkin kopyalandı!");
+            document.body.removeChild(el); tg.showAlert("Kopyalandı!");
         }
 
         function save() {
-            localStorage.setItem('ty_v2_score', score);
-            localStorage.setItem('ty_v2_tap', tapPower);
-            localStorage.setItem('ty_v2_pas', passive);
+            localStorage.setItem('ty_v3_score', score);
+            localStorage.setItem('ty_v3_tap', tapPower);
+            localStorage.setItem('ty_v3_pas', passive);
         }
 
         setInterval(() => { score += (passive / 10); updateUI(); }, 100);
