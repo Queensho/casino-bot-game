@@ -3,87 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Tycoon Premium</title>
+    <title>AI Tycoon: Final Edition</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap');
         
+        :root { --neon-blue: #00f2ff; --neon-purple: #7000ff; --glass: rgba(15, 23, 42, 0.7); }
+
         body { 
             background: #05070a; color: white; font-family: 'Rajdhani', sans-serif; 
             margin: 0; display: flex; flex-direction: column; align-items: center; 
-            height: 100vh; overflow: hidden; user-select: none;
+            height: 100vh; overflow: hidden;
         }
 
-        /* Üst Bilgi Kutuları - Görsele Birebir */
-        #top-stats { 
-            display: flex; justify-content: space-between; width: 92%; margin-top: 15px; gap: 12px;
-        }
+        /* Üst Bilgi Kutuları */
+        #top-stats { display: flex; justify-content: space-between; width: 92%; margin-top: 15px; gap: 10px; }
         .stat-card {
-            flex: 1; background: rgba(15, 23, 42, 0.6); border: 1px solid #00f2ff;
-            border-radius: 12px; padding: 8px; text-align: center;
-            backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+            flex: 1; background: var(--glass); border: 1px solid var(--neon-blue);
+            border-radius: 12px; padding: 10px; text-align: center; backdrop-filter: blur(10px);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
         }
-        .stat-card.purple { border-color: #7000ff; box-shadow: 0 0 15px rgba(112, 0, 255, 0.1); }
-        .stat-label { font-size: 9px; color: #8b949e; display: block; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 1px; }
-        .stat-value { font-family: 'Orbitron'; font-size: 13px; color: #fff; text-shadow: 0 0 5px var(--glow); }
+        .stat-card.purple { border-color: var(--neon-purple); box-shadow: 0 0 15px rgba(112, 0, 255, 0.1); }
+        .stat-label { font-size: 10px; color: #8b949e; display: block; margin-bottom: 4px; font-weight: bold; }
+        .stat-value { font-family: 'Orbitron'; font-size: 14px; color: #fff; }
 
         /* Ana Gövde */
-        #main-display { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; margin-top: -20px; }
-        
-        #rank-name { font-family: 'Orbitron'; font-size: 14px; color: #fff; letter-spacing: 2px; margin-bottom: 8px; }
-        #progress-bg { width: 65%; height: 5px; background: #1a2236; border-radius: 10px; overflow: hidden; margin-bottom: 15px; }
-        #progress-bar { width: 0%; height: 100%; background: #00f2ff; box-shadow: 0 0 15px #00f2ff; transition: width 0.4s; }
+        #main-display { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+        #rank-text { font-family: 'Orbitron'; font-size: 15px; letter-spacing: 2px; margin-bottom: 10px; }
+        #score-main { font-family: 'Orbitron'; font-size: 44px; font-weight: bold; color: #fff; margin-bottom: 25px; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        #score-main span { color: var(--neon-blue); font-size: 20px; margin-left: 5px; }
 
-        #score-main { font-family: 'Orbitron'; font-size: 42px; font-weight: bold; color: #fff; margin-bottom: 25px; }
-        #score-main span { color: #00f2ff; font-size: 20px; margin-left: 5px; }
-
-        /* Parlayan Beyin */
-        #ai-brain-wrapper { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
-        #ai-brain-ring { 
+        /* Parlayan Beyin ve Halkası */
+        #brain-container { position: relative; width: 210px; height: 210px; display: flex; align-items: center; justify-content: center; }
+        #brain-glow { 
             position: absolute; width: 100%; height: 100%; border-radius: 50%; 
-            border: 2px solid #7000ff; box-shadow: 0 0 30px rgba(112, 0, 255, 0.5);
+            border: 2px solid var(--neon-purple); box-shadow: 0 0 40px var(--neon-purple);
             animation: pulse 2s infinite;
         }
-        #ai-brain-btn { 
-            width: 170px; height: 170px; border-radius: 50%; font-size: 90px;
-            background: radial-gradient(circle, #1a103d, #05070a);
-            display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2;
-            transition: transform 0.05s;
+        #brain-btn { 
+            width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, #1a103d, #05070a);
+            display: flex; align-items: center; justify-content: center; font-size: 90px;
+            cursor: pointer; z-index: 2; transition: transform 0.05s; border: 1px solid rgba(255,255,255,0.1);
         }
-        #ai-brain-btn:active { transform: scale(0.92); }
+        #brain-btn:active { transform: scale(0.94); }
 
-        /* Kartlar (Yatay Kaydırma) */
-        #cards-footer {
-            width: 100%; background: rgba(10, 15, 25, 0.9); padding: 15px 0;
-            border-top: 1px solid #1a2236; display: flex; overflow-x: auto; gap: 12px; padding-left: 15px;
+        /* Kombo Bildirimi */
+        #combo-info { margin-top: 15px; font-size: 12px; color: gold; font-weight: bold; animation: blink 1s infinite; }
+
+        /* Alt Kartlar Bölümü */
+        #cards-section {
+            width: 100%; background: rgba(10, 15, 25, 0.95); padding: 15px 0;
+            border-top: 1px solid #1a2236; display: flex; overflow-x: auto; gap: 15px; padding-left: 15px;
         }
         .card {
-            min-width: 125px; background: #161b22; border: 1px solid #30363d;
-            border-radius: 12px; padding: 10px; text-align: center; position: relative;
+            min-width: 130px; background: #161b22; border: 1px solid #30363d;
+            border-radius: 15px; padding: 12px; text-align: center; position: relative;
         }
-        .card img { width: 45px; margin-bottom: 8px; filter: drop-shadow(0 0 5px #00f2ff); }
-        .card-name { font-size: 11px; font-weight: bold; display: block; margin-bottom: 4px; }
-        .card-price { font-size: 10px; color: #8b949e; display: block; margin-bottom: 8px; }
+        .card-emoji { font-size: 30px; margin-bottom: 8px; display: block; filter: drop-shadow(0 0 5px var(--neon-blue)); }
+        .card-name { font-size: 12px; font-weight: bold; margin-bottom: 4px; display: block; }
+        .card-price { font-size: 11px; color: #8b949e; margin-bottom: 10px; display: block; }
         .buy-btn { 
-            background: #00f2ff; color: #000; border: none; width: 100%; 
-            padding: 6px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer;
+            background: var(--neon-blue); color: #000; border: none; width: 100%; 
+            padding: 8px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;
         }
-        .buy-btn:disabled { background: #1e293b; color: #4b5563; cursor: not-allowed; }
-        
-        /* Kilitli Kart Efekti */
+        .buy-btn:disabled { background: #1e293b; color: #4b5563; }
         .locked-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); border-radius: 12px; display: flex;
-            flex-direction: column; align-items: center; justify-content: center;
-            font-size: 10px; color: #ff3e3e; font-weight: bold; backdrop-filter: blur(2px);
+            background: rgba(0,0,0,0.8); border-radius: 15px; display: flex;
+            align-items: center; justify-content: center; font-size: 10px; color: #ff4c4c; font-weight: bold;
         }
 
-        /* Navigasyon */
-        #nav { width: 100%; background: #05070a; display: flex; padding: 12px 0; border-top: 1px solid #1a2236; }
-        .nav-item { flex: 1; text-align: center; color: #4b5563; font-size: 10px; font-weight: bold; }
-        .nav-item.active { color: #00f2ff; }
+        /* Animasyonlar */
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.2); opacity: 0; } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.15); opacity: 0; } }
+        /* Nav */
+        #navbar { width: 100%; display: flex; background: #05070a; border-top: 1px solid #1a2236; padding: 15px 0; }
+        .nav-item { flex: 1; text-align: center; color: #4b5563; font-size: 11px; font-weight: bold; }
+        .nav-item.active { color: var(--neon-blue); }
     </style>
 </head>
 <body>
@@ -95,29 +92,28 @@
         </div>
         <div class="stat-card purple">
             <span class="stat-label">⚙️ SAATLİK KAZANÇ</span>
-            <span class="stat-value" id="pps-val">0/s</span>
+            <span class="stat-value" id="pas-val">0/s</span>
         </div>
     </div>
 
     <div id="main-display">
-        <div id="rank-name">GELİŞTİRİCİ AI</div>
-        <div id="progress-bg"><div id="progress-bar"></div></div>
-        
+        <div id="rank-text">GELİŞTİRİCİ AI</div>
         <div id="score-main"><span id="score-val">0</span><span>MB</span></div>
 
-        <div id="ai-brain-wrapper">
-            <div id="ai-brain-ring"></div>
-            <div id="ai-brain-btn" onclick="tap(event)">🧠</div>
+        <div id="brain-container">
+            <div id="brain-glow"></div>
+            <div id="brain-btn" onclick="handleTap(event)">🧠</div>
         </div>
+
+        <div id="combo-info" onclick="claimCombo()">⭐ GÜNLÜK KOMBO HAZIR!</div>
     </div>
 
-    <div id="cards-footer">
+    <div id="cards-section">
         </div>
 
-    <div id="nav">
-        <div class="nav-item">KARTLAR</div>
+    <div id="navbar">
         <div class="nav-item">MARKET</div>
-        <div class="nav-item active">ANA</div>
+        <div class="nav-item active">ANA EKRAN</div>
         <div class="nav-item">GÖREVLER</div>
     </div>
 
@@ -125,87 +121,85 @@
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        let score = parseFloat(localStorage.getItem('ai_p_score')) || 0;
-        let tapPower = parseInt(localStorage.getItem('ai_p_tap')) || 1;
-        let passive = parseInt(localStorage.getItem('ai_p_pas')) || 0;
+        let score = parseFloat(localStorage.getItem('ai_final_score')) || 0;
+        let tapPower = parseInt(localStorage.getItem('ai_final_tap')) || 1;
+        let passive = parseInt(localStorage.getItem('ai_final_pas')) || 0;
 
-        const rankData = [
-            { name: "STAJYER AI", min: 0, level: 1 },
-            { name: "GELİŞTİRİCİ AI", min: 50000, level: 2 },
-            { name: "SİSTEM MİMARI", min: 250000, level: 3 },
-            { name: "CEO SUPREME", min: 1000000, level: 4 }
+        const cards = [
+            { id: 1, name: "GPU V1", emoji: "⚡", price: 500, type: "tap", bonus: 2, lvl: 1 },
+            { id: 2, name: "SUNUCU ODASI", emoji: "🖥", price: 2000, type: "pas", bonus: 10, lvl: 1 },
+            { id: 3, name: "KUANTUM ÇİP", emoji: "💠", price: 15000, type: "tap", bonus: 15, lvl: 2 },
+            { id: 4, name: "VERİ MERKEZİ", emoji: "🏢", price: 50000, type: "pas", bonus: 100, lvl: 2 }
         ];
 
-        const cardLibrary = [
-            { id: 1, name: "GPU V1", price: 1000, type: "tap", bonus: 2, minLvl: 1, img: "⚡" },
-            { id: 2, name: "SUNUCU ODASI", price: 5000, type: "pas", bonus: 20, minLvl: 1, img: "🖥" },
-            { id: 3, name: "KUANTUM ÇİP", price: 25000, type: "tap", bonus: 10, minLvl: 2, img: "💠" },
-            { id: 4, name: "VERİ MERKEZİ", price: 100000, type: "pas", bonus: 150, minLvl: 3, img: "🏢" }
-        ];
-
-        function getLevel() {
-            let current = rankData[0];
-            rankData.forEach(r => { if(score >= r.min) current = r; });
-            return current;
-        }
+        function getLvl() { return score < 50000 ? 1 : 2; }
 
         function updateUI() {
-            const currentRank = getLevel();
             document.getElementById('score-val').innerText = Math.floor(score).toLocaleString();
             document.getElementById('tap-val').innerText = "+" + tapPower;
-            document.getElementById('pps-val').innerText = passive.toLocaleString() + "/s";
-            document.getElementById('rank-name').innerText = currentRank.name;
+            document.getElementById('pas-val').innerText = passive.toLocaleString() + "/s";
+            document.getElementById('rank-text').innerText = getLvl() === 1 ? "STAJYER AI" : "GELİŞTİRİCİ AI";
             
-            // Progress Bar
-            let nextRank = rankData.find(r => r.min > score) || {min: score * 1.5};
-            let prog = ((score - currentRank.min) / (nextRank.min - currentRank.min)) * 100;
-            document.getElementById('progress-bar').style.width = Math.min(prog, 100) + "%";
+            const comboBtn = document.getElementById('combo-info');
+            const lastClaim = localStorage.getItem('combo_date');
+            if(lastClaim === new Date().toDateString()) {
+                comboBtn.innerText = "⭐ KOMBO ALINDI";
+                comboBtn.style.color = "#4b5563";
+            }
 
-            renderCards(currentRank.level);
+            renderCards();
         }
 
-        function renderCards(userLvl) {
-            const container = document.getElementById('cards-footer');
+        function renderCards() {
+            const container = document.getElementById('cards-section');
+            const currentLvl = getLvl();
             container.innerHTML = '';
             
-            cardLibrary.forEach(card => {
-                const isLocked = userLvl < card.minLvl;
-                const cardEl = document.createElement('div');
-                cardEl.className = 'card';
-                cardEl.innerHTML = `
-                    <div style="font-size:30px; margin-bottom:5px;">${card.img}</div>
-                    <span class="card-name">${card.name}</span>
-                    <span class="card-price">${card.price.toLocaleString()} MB</span>
-                    <button class="buy-btn" ${isLocked || score < card.price ? 'disabled' : ''} 
-                            onclick="buy(${card.id})">SATIN AL</button>
-                    ${isLocked ? `<div class="locked-overlay">🔒 Lvl ${card.minLvl} Gerekli</div>` : ''}
+            cards.forEach(c => {
+                const isLocked = currentLvl < c.lvl;
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card';
+                cardDiv.innerHTML = `
+                    <span class="card-emoji">${c.emoji}</span>
+                    <span class="card-name">${c.name}</span>
+                    <span class="card-price">${c.price.toLocaleString()} MB</span>
+                    <button class="buy-btn" ${isLocked || score < c.price ? 'disabled' : ''} onclick="buy(${c.id})">AL</button>
+                    ${isLocked ? `<div class="locked-overlay">🔒 Lvl ${c.lvl}</div>` : ''}
                 `;
-                container.appendChild(cardEl);
+                container.appendChild(cardDiv);
             });
         }
 
-        function tap(e) {
+        function handleTap(e) {
             score += tapPower;
-            tg.HapticFeedback.impactOccurred('light');
-            updateUI();
-            save();
+            tg.HapticFeedback.impactOccurred('medium');
+            updateUI(); save();
         }
 
         function buy(id) {
-            const card = cardLibrary.find(c => c.id === id);
-            if(score >= card.price) {
-                score -= card.price;
-                if(card.type === "tap") tapPower += card.bonus;
-                else passive += card.bonus;
-                tg.HapticFeedback.notificationOccurred('success');
+            const c = cards.find(x => x.id === id);
+            if(score >= c.price) {
+                score -= c.price;
+                if(c.type === "tap") tapPower += c.bonus;
+                else passive += c.bonus;
+                updateUI(); save();
+            }
+        }
+
+        function claimCombo() {
+            const today = new Date().toDateString();
+            if(localStorage.getItem('combo_date') !== today) {
+                score += 50000;
+                localStorage.setItem('combo_date', today);
+                tg.showAlert("Günlük Kombo: 50.000 MB Kazandın!");
                 updateUI(); save();
             }
         }
 
         function save() {
-            localStorage.setItem('ai_p_score', score);
-            localStorage.setItem('ai_p_tap', tapPower);
-            localStorage.setItem('ai_p_pas', passive);
+            localStorage.setItem('ai_final_score', score);
+            localStorage.setItem('ai_final_tap', tapPower);
+            localStorage.setItem('ai_final_pas', passive);
         }
 
         setInterval(() => { if(passive > 0) { score += (passive / 10); updateUI(); } }, 100);
