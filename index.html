@@ -7,146 +7,121 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-        body { background: #05070a; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; user-select: none; }
-        
-        /* Üst Panel */
+        body { background: #05070a; color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; user-select: none; }
         #header { width: 90%; display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #1a2236; }
-        .stat-item { text-align: center; background: #0f172a; padding: 5px 15px; border-radius: 10px; border: 1px solid #7000ff; }
-        .stat-label { font-size: 9px; color: #5c6b89; display: block; }
-        .stat-val { font-family: 'Orbitron', sans-serif; font-size: 12px; color: #00f2ff; }
-
-        /* Skor Alanı */
-        #score-container { margin-top: 30px; text-align: center; }
-        #score { font-family: 'Orbitron', sans-serif; font-size: 45px; font-weight: bold; text-shadow: 0 0 20px #00f2ff; }
-        
-        /* Ana Buton */
-        #ai-hub { position: relative; width: 200px; height: 200px; margin-top: 30px; cursor: pointer; transition: transform 0.1s; }
-        #ai-hub:active { transform: scale(0.92); }
-        #ai-hub img { width: 100%; filter: drop-shadow(0 0 20px #7000ff); }
-
-        /* Enerji Barı */
-        #energy-box { width: 80%; margin-top: 30px; }
-        #energy-bar { width: 100%; height: 12px; background: #1a2236; border-radius: 6px; overflow: hidden; border: 1px solid #334155; }
-        #energy-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #00f2ff, #7000ff); transition: width 0.2s; }
-
-        /* Market Paneli */
-        #shop { position: fixed; bottom: 70px; width: 100%; background: #0f172a; border-radius: 20px 20px 0 0; border-top: 2px solid #7000ff; padding: 15px 0; display: none; max-height: 50vh; overflow-y: auto; }
-        .upgrade-item { background: #1e293b; margin: 10px 20px; padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .buy-btn { background: #7000ff; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .buy-btn:disabled { background: #334155; color: #64748b; }
-
-        /* Alt Menü */
+        .stat-item { text-align: center; background: #0f172a; padding: 5px 10px; border-radius: 10px; border: 1px solid #7000ff; flex: 1; margin: 0 5px; }
+        .stat-val { font-family: 'Orbitron', sans-serif; font-size: 11px; color: #00f2ff; }
+        #score { font-family: 'Orbitron', sans-serif; font-size: 40px; font-weight: bold; text-shadow: 0 0 20px #00f2ff; margin-top: 20px; }
+        #ai-hub { font-size: 100px; margin-top: 30px; cursor: pointer; transition: transform 0.1s; }
+        #ai-hub:active { transform: scale(0.9); }
+        .modal { position: fixed; bottom: 70px; width: 100%; background: #0f172a; border-radius: 20px 20px 0 0; border-top: 2px solid #7000ff; padding: 20px 0; display: none; z-index: 100; }
+        .card { background: #1e293b; margin: 10px 20px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
+        .btn { background: #7000ff; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         #nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #05070a; border-top: 1px solid #1a2236; padding: 15px 0; }
         .nav-item { flex: 1; text-align: center; font-size: 11px; color: #64748b; cursor: pointer; }
-        .nav-item.active { color: #00f2ff; }
+        .active { color: #00f2ff; }
     </style>
 </head>
 <body>
 
     <div id="header">
-        <div class="stat-item"><span class="stat-label">TIK GÜCÜ</span><span class="stat-val" id="tap-val">1</span></div>
-        <div class="stat-item"><span class="stat-label">SAATLİK KAZANÇ</span><span class="stat-val" id="pps-val">0</span></div>
+        <div class="stat-item"><span class="stat-val" id="tap-val">+1</span></div>
+        <div class="stat-item"><span class="stat-val" id="pps-val">0/s</span></div>
     </div>
 
-    <div id="score-container">
-        <div id="score">0</div>
-        <div style="font-size: 10px; color: #5c6b89; margin-top: 5px;">TOPLANAN VERİ (MB)</div>
-    </div>
+    <div id="score">0</div>
+    <div style="font-size: 10px; color: #5c6b89;">TOPLANAN VERİ (MB)</div>
 
-    <div id="ai-hub" onclick="handleTap(event)">
-        <div style="font-size: 100px; text-align: center;">⚙️</div>
-    </div>
+    <div id="ai-hub" onclick="handleTap(event)">🚀</div>
 
-    <div id="energy-box">
-        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px;">
-            <span>⚡ ENERJİ</span>
-            <span id="energy-text">1000 / 1000</span>
+    <div id="friends-modal" class="modal">
+        <h3 style="text-align: center; margin-top: 0;">DAVET ET & KAZAN</h3>
+        <p style="text-align: center; font-size: 12px; padding: 0 20px; color: #8b949e;">Arkadaşını davet et, ikiniz de 100.000 MB kazanın!</p>
+        <div class="card">
+            <div style="font-size: 11px; color: #00f2ff;" id="ref-link">Yükleniyor...</div>
+            <button class="btn" onclick="copyRef()">KOPYALA</button>
         </div>
-        <div id="energy-bar"><div id="energy-fill"></div></div>
+        <button onclick="toggleModal('friends-modal', false)" style="width: 90%; margin: 10px 5%; background: #334155; border: none; color: white; padding: 10px; border-radius: 8px;">KAPAT</button>
     </div>
 
-    <div id="shop">
-        <h3 style="text-align: center; margin-top: 0;">VERİ MERKEZİ</h3>
-        <div class="upgrade-item">
-            <div><b>RTX 4090</b><br><small>+5 Pasif/sn (500 MB)</small></div>
-            <button class="buy-btn" onclick="buyUpgrade('passive', 500, 5)">SATIN AL</button>
+    <div id="shop-modal" class="modal">
+        <h3 style="text-align: center; margin-top: 0;">TEKNOLOJİ MARKETİ</h3>
+        <div class="card">
+            <div><b>GPU V1</b><br><small>+5 Pasif/sn (5000 MB)</small></div>
+            <button class="btn" onclick="buy('passive', 5000, 5)">SATIN AL</button>
         </div>
-        <div class="upgrade-item">
-            <div><b>Süper İşlemci</b><br><small>+2 Tık Gücü (200 MB)</small></div>
-            <button class="buy-btn" onclick="buyUpgrade('tap', 200, 2)">SATIN AL</button>
-        </div>
+        <button onclick="toggleModal('shop-modal', false)" style="width: 90%; margin: 10px 5%; background: #334155; border: none; color: white; padding: 10px; border-radius: 8px;">KAPAT</button>
     </div>
 
     <div id="nav">
-        <div class="nav-item active" onclick="toggleShop(false)">💻 ANA EKRAN</div>
-        <div class="nav-item" onclick="toggleShop(true)">🛠 MARKET</div>
-        <div class="nav-item" onclick="tg.showAlert('Yakında!')">🏆 LİDERLER</div>
+        <div class="nav-item active" onclick="toggleModal('', false)">💻 ANA</div>
+        <div class="nav-item" onclick="toggleModal('shop-modal', true)">🛠 MARKET</div>
+        <div class="nav-item" onclick="toggleModal('friends-panel', true)">👥 EKİP</div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
+        let user = tg.initDataUnsafe.user;
 
-        // Değişkenler
-        let score = parseFloat(localStorage.getItem('ty_score')) || 0;
-        let tapPower = parseInt(localStorage.getItem('ty_tap')) || 1;
-        let passiveIncome = parseInt(localStorage.getItem('ty_pas')) || 0;
-        let energy = parseInt(localStorage.getItem('ty_ene')) || 1000;
-        const maxEnergy = 1000;
+        // URL'den bonusu kontrol et
+        const urlParams = new URLSearchParams(window.location.search);
+        let bonus = parseInt(urlParams.get('bonus')) || 0;
+
+        let score = parseFloat(localStorage.getItem('ty_v2_score')) || 0;
+        if (bonus > 0 && !localStorage.getItem('bonus_claimed')) {
+            score += bonus;
+            localStorage.setItem('bonus_claimed', 'true');
+            tg.showAlert("Hoş geldin hediyesi: 100.000 MB tanımlandı!");
+        }
+
+        let tapPower = parseInt(localStorage.getItem('ty_v2_tap')) || 1;
+        let passive = parseInt(localStorage.getItem('ty_v2_pas')) || 0;
 
         function updateUI() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString();
             document.getElementById('tap-val').innerText = "+" + tapPower;
-            document.getElementById('pps-val').innerText = (passiveIncome * 3600).toLocaleString();
-            document.getElementById('energy-text').innerText = energy + " / " + maxEnergy;
-            document.getElementById('energy-fill').style.width = (energy / maxEnergy * 100) + "%";
+            document.getElementById('pps-val').innerText = passive + "/s";
+            document.getElementById('ref-link').innerText = "t.me/BOT_ADIN?start=" + (user ? user.id : "boss");
         }
 
         function handleTap(e) {
-            if (energy >= tapPower) {
-                score += tapPower;
-                energy -= tapPower;
-                tg.HapticFeedback.impactOccurred('light');
-                save();
-                updateUI();
-            } else {
-                tg.showAlert("Enerji bitti! Dinlenmen lazım.");
-            }
+            score += tapPower;
+            tg.HapticFeedback.impactOccurred('light');
+            updateUI();
+            save();
         }
 
-        function toggleShop(show) {
-            document.getElementById('shop').style.display = show ? 'block' : 'none';
+        function toggleModal(id, show) {
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+            if (show) document.getElementById(id).style.display = 'block';
         }
 
-        function buyUpgrade(type, cost, amount) {
+        function buy(type, cost, amount) {
             if (score >= cost) {
                 score -= cost;
-                if (type === 'tap') tapPower += amount;
-                if (type === 'passive') passiveIncome += amount;
-                save();
-                updateUI();
-                tg.showAlert("Yükseltme tamamlandı!");
-            } else {
-                tg.showAlert("Yetersiz veri!");
-            }
+                if (type === 'passive') passive += amount;
+                updateUI(); save();
+                tg.showAlert("İşlem Başarılı!");
+            } else { tg.showAlert("Yetersiz Veri!"); }
+        }
+
+        function copyRef() {
+            let link = document.getElementById('ref-link').innerText;
+            const el = document.createElement('textarea');
+            el.value = "https://" + link;
+            document.body.appendChild(el); el.select(); document.execCommand('copy');
+            document.body.removeChild(el);
+            tg.showAlert("Davet linkin kopyalandı!");
         }
 
         function save() {
-            localStorage.setItem('ty_score', score);
-            localStorage.setItem('ty_tap', tapPower);
-            localStorage.setItem('ty_pas', passiveIncome);
-            localStorage.setItem('ty_ene', energy);
+            localStorage.setItem('ty_v2_score', score);
+            localStorage.setItem('ty_v2_tap', tapPower);
+            localStorage.setItem('ty_v2_pas', passive);
         }
 
-        // Pasif Gelir ve Enerji Yenileme (Her saniye)
-        setInterval(() => {
-            score += (passiveIncome / 10);
-            if (energy < maxEnergy) energy += 1;
-            updateUI();
-            // Her 5 saniyede bir otomatik kaydet
-            if (Math.floor(score) % 5 === 0) save();
-        }, 100);
-
+        setInterval(() => { score += (passive / 10); updateUI(); }, 100);
         updateUI();
     </script>
 </body>
