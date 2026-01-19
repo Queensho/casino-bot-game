@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Tycoon | Ultimate</title>
+    <title>AI Tycoon | Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap');
@@ -15,38 +15,42 @@
             margin: 0; padding: 0; height: 100vh; overflow: hidden;
         }
 
-        /* Üst Bilgi Paneli */
+        /* Üst Panel */
         #top-stats { display: flex; justify-content: space-between; width: 92%; margin: 15px auto; gap: 10px; }
         .stat-card {
             flex: 1; background: var(--glass); border: 1px solid var(--neon-blue);
-            border-radius: 12px; padding: 8px; text-align: center; box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
+            border-radius: 12px; padding: 8px; text-align: center;
         }
         .stat-card.purple { border-color: var(--neon-purple); }
         .label { font-size: 9px; color: #8b949e; display: block; font-weight: bold; }
         .value { font-family: 'Orbitron'; font-size: 12px; color: #fff; }
 
-        /* Sayfa Yönetimi */
+        /* Sayfalar */
         .page { 
             display: none; flex-direction: column; align-items: center; 
-            height: calc(100vh - 160px); overflow-y: auto; padding: 20px;
+            height: calc(100vh - 165px); overflow-y: auto; padding: 20px;
         }
         .page.active { display: flex; }
 
         /* Ana Ekran */
-        #score-main { font-family: 'Orbitron'; font-size: 40px; font-weight: bold; margin-bottom: 30px; text-shadow: 0 0 15px var(--neon-blue); }
-        #brain-container { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
+        #rank-title { font-family: 'Orbitron'; font-size: 12px; color: #fff; margin-bottom: 5px; }
+        #progress-line { width: 60%; height: 6px; background: #1a2236; border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
+        #progress-fill { width: 0%; height: 100%; background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); transition: 0.3s; }
+
+        #score-main { font-family: 'Orbitron'; font-size: 40px; font-weight: bold; margin-bottom: 20px; text-shadow: 0 0 15px var(--neon-blue); }
+        
+        #brain-container { position: relative; width: 190px; height: 190px; display: flex; align-items: center; justify-content: center; }
         #brain-glow { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid var(--neon-purple); box-shadow: 0 0 30px var(--neon-purple); animation: pulse 2s infinite; }
-        #brain-btn { width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, #1a103d, #05070a); display: flex; align-items: center; justify-content: center; font-size: 80px; cursor: pointer; z-index: 5; transition: 0.1s; border: 1px solid rgba(255,255,255,0.1); }
+        #brain-btn { width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, #1a103d, #05070a); display: flex; align-items: center; justify-content: center; font-size: 75px; cursor: pointer; z-index: 5; transition: 0.1s; border: 1px solid rgba(255,255,255,0.1); }
         #brain-btn:active { transform: scale(0.92); }
 
-        /* Liste Kartları (Market, Görevler, Ref) */
+        /* Liste Kartları */
         .item-card { 
             width: 90%; background: rgba(30, 41, 59, 0.5); border: 1px solid #334155; 
             border-radius: 15px; padding: 15px; margin-bottom: 12px;
             display: flex; justify-content: space-between; align-items: center;
         }
         .item-info b { display: block; font-size: 14px; color: var(--neon-blue); }
-        .item-info span { font-size: 11px; color: #94a3b8; }
         .action-btn { 
             background: var(--neon-blue); color: #000; border: none; 
             padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;
@@ -59,7 +63,7 @@
         }
         .nav-item { flex: 1; text-align: center; color: #4b5563; font-size: 10px; font-weight: bold; cursor: pointer; }
         .nav-item.active { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
-        .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+        .nav-icon { font-size: 18px; display: block; margin-bottom: 2px; }
 
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.1); opacity: 0; } }
     </style>
@@ -78,46 +82,44 @@
     </div>
 
     <div id="home-page" class="page active">
+        <div id="rank-title">STAJYER AI</div>
+        <div id="progress-line"><div id="progress-fill"></div></div>
+
         <div id="score-main"><span id="score">0</span> <small style="font-size:14px; color:var(--neon-blue)">MB</small></div>
+        
         <div id="brain-container">
             <div id="brain-glow"></div>
             <div id="brain-btn" onclick="handleTap(event)">🧠</div>
         </div>
+
+        <button id="daily-btn" class="action-btn" style="margin-top: 25px; background: gold; width: 80%;" onclick="claimDaily()">🎁 GÜNLÜK ÖDÜLÜ AL</button>
     </div>
 
     <div id="market-page" class="page">
-        <h2 style="color:var(--neon-blue); font-family:Orbitron;">MARKET</h2>
+        <h2 style="color:var(--neon-blue); font-family:Orbitron; font-size: 18px;">MARKET</h2>
         <div class="item-card">
-            <div class="item-info"><b>RTX 5090 GPU</b><span>+10 Tık Gücü</span></div>
+            <div class="item-info"><b>RTX 5090 GPU</b><span>+10 Tık</span></div>
             <button class="action-btn" onclick="buy('tap', 2000, 10)">2K MB</button>
         </div>
         <div class="item-card">
-            <div class="item-info"><b>Kuantum Sunucu</b><span>+50 Pasif/sn</span></div>
+            <div class="item-info"><b>Kuantum Sunucu</b><span>+50 Pasif</span></div>
             <button class="action-btn" onclick="buy('pas', 10000, 50)">10K MB</button>
-        </div>
-        <div class="item-card">
-            <div class="item-info"><b>AI Çekirdeği</b><span>+250 Pasif/sn</span></div>
-            <button class="action-btn" onclick="buy('pas', 50000, 250)">50K MB</button>
         </div>
     </div>
 
     <div id="tasks-page" class="page">
-        <h2 style="color:var(--neon-blue); font-family:Orbitron;">GÖREVLER</h2>
+        <h2 style="color:var(--neon-blue); font-family:Orbitron; font-size: 18px;">GÖREVLER</h2>
         <div class="item-card">
-            <div class="item-info"><b>Telegram Kanalları</b><span>+100K MB Ödül</span></div>
+            <div class="item-info"><b>Kanala Katıl</b><span>+100K MB</span></div>
             <button class="action-btn" onclick="doTask('https://t.me/KanalLinkin', 100000)">YAP</button>
-        </div>
-        <div class="item-card">
-            <div class="item-info"><b>X Takip Et</b><span>+50K MB Ödül</span></div>
-            <button class="action-btn" onclick="doTask('https://x.com/Hesabın', 50000)">YAP</button>
         </div>
     </div>
 
     <div id="ref-page" class="page">
-        <h2 style="color:var(--neon-blue); font-family:Orbitron;">ARKADAŞLAR</h2>
-        <div class="item-card" style="flex-direction: column; gap: 10px;">
-            <div style="font-size: 14px; text-align: center;">Arkadaşlarını davet et, her arkadaşın için <b>500.000 MB</b> kazan!</div>
-            <button class="action-btn" style="width: 100%;" onclick="inviteFriend()">ARKADAŞINI DAVET ET</button>
+        <h2 style="color:var(--neon-blue); font-family:Orbitron; font-size: 18px;">ARKADAŞLAR</h2>
+        <div class="item-card" style="flex-direction: column; gap: 10px; text-align: center;">
+            <p>Her davet için <b>250.000 MB</b> kazanırsın!</p>
+            <button class="action-btn" style="width: 100%;" onclick="inviteFriend()">LİNKİ PAYLAŞ</button>
         </div>
     </div>
 
@@ -132,14 +134,38 @@
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        let score = parseFloat(localStorage.getItem('ai_v10_score')) || 0;
-        let tap = parseInt(localStorage.getItem('ai_v10_tap')) || 1;
-        let pas = parseInt(localStorage.getItem('ai_v10_pas')) || 0;
+        let score = parseFloat(localStorage.getItem('pro_score')) || 0;
+        let tap = parseInt(localStorage.getItem('pro_tap')) || 1;
+        let pas = parseInt(localStorage.getItem('pro_pas')) || 0;
+
+        const ranks = [
+            { n: "STAJYER AI", m: 0 },
+            { n: "GELİŞTİRİCİ AI", m: 50000 },
+            { n: "SİSTEM MİMARI", m: 500000 },
+            { n: "CEO / SUPREME AI", m: 5000000 }
+        ];
 
         function updateUI() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString();
             document.getElementById('ui-tap').innerText = "+" + tap;
             document.getElementById('ui-pas').innerText = pas + "/s";
+            
+            // Rank ve Bar
+            let currentRank = ranks[0];
+            ranks.forEach(r => { if(score >= r.m) currentRank = r; });
+            document.getElementById('rank-title').innerText = currentRank.n;
+            
+            let nextRank = ranks.find(r => r.m > score) || { m: score * 1.2 };
+            let percent = ((score - currentRank.m) / (nextRank.m - currentRank.m)) * 100;
+            document.getElementById('progress-fill').style.width = Math.min(percent, 100) + "%";
+
+            // Günlük Ödül Kontrol
+            let last = localStorage.getItem('pro_last_claim');
+            if(last === new Date().toDateString()) {
+                document.getElementById('daily-btn').innerText = "ÖDÜL ALINDI";
+                document.getElementById('daily-btn').disabled = true;
+                document.getElementById('daily-btn').style.background = "#334155";
+            }
         }
 
         function handleTap(e) {
@@ -162,10 +188,16 @@
                 else pas += bonus;
                 tg.HapticFeedback.notificationOccurred('success');
                 updateUI(); save();
-                tg.showAlert("Başarıyla yükseltildi!");
             } else {
-                tg.showAlert("Yetersiz bakiye!");
+                tg.showAlert("MB Yetersiz!");
             }
+        }
+
+        function claimDaily() {
+            score += 50000;
+            localStorage.setItem('pro_last_claim', new Date().toDateString());
+            tg.showAlert("Günlük ödül: 50.000 MB alındı!");
+            updateUI(); save();
         }
 
         function doTask(link, reward) {
@@ -173,19 +205,19 @@
             setTimeout(() => {
                 score += reward;
                 updateUI(); save();
-                tg.showAlert("Görev ödülü: " + reward.toLocaleString() + " MB alındı!");
+                tg.showAlert("Ödül: " + reward.toLocaleString() + " MB!");
             }, 3000);
         }
 
         function inviteFriend() {
-            let inviteLink = "https://t.me/SeninBotunLink_bot?start=" + tg.initDataUnsafe.user.id;
-            tg.openTelegramLink("https://t.me/share/url?url=" + encodeURIComponent(inviteLink) + "&text=AI Tycoon oyna ve MB'ları topla!");
+            let link = "https://t.me/SeninBotunLink_bot?start=" + (tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "123");
+            tg.openTelegramLink("https://t.me/share/url?url=" + encodeURIComponent(link) + "&text=AI Tycoon oyna!");
         }
 
         function save() {
-            localStorage.setItem('ai_v10_score', score);
-            localStorage.setItem('ai_v10_tap', tap);
-            localStorage.setItem('ai_v10_pas', pas);
+            localStorage.setItem('pro_score', score);
+            localStorage.setItem('pro_tap', tap);
+            localStorage.setItem('pro_pas', pas);
         }
 
         setInterval(() => { if(pas > 0) { score += (pas / 10); updateUI(); } }, 100);
