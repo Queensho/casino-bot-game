@@ -1,30 +1,106 @@
-<div id="upgrade-container" style="background: #1c2128; padding: 15px; border-radius: 10px; margin: 10px;">
-    <h4>Market</h4>
-    <div class="upgrade-card" onclick="buyPassive('slot')" style="border: 1px solid #30363d; padding: 10px; display: flex; justify-content: space-between;">
-        <span>🎰 Otomatik Slot (Seviye 1)</span>
-        <span style="color: #ffd700;">Fiyat: 5000 💰</span>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Underground Casino King</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+        body { background-color: #0d1117; color: #c9d1d9; font-family: 'Roboto Mono', monospace; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100vh; overflow: hidden; user-select: none; }
+        #top-panel { width: 90%; display: flex; justify-content: space-between; align-items: center; padding: 15px 0; }
+        #score-display { font-size: 26px; font-weight: bold; color: #ffd700; }
+        #main-tap-area { position: relative; width: 250px; height: 250px; background: radial-gradient(circle, #1a1a1a 0%, #0d1117 100%); border: 8px solid #00c4cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 30px rgba(0, 196, 204, 0.4); transition: transform 0.05s; }
+        #main-tap-area:active { transform: scale(0.95); }
+        #tap-icon { font-size: 80px; }
+        
+        /* Alt Menü */
+        #bottom-panel { width: 100%; background-color: #161b22; padding: 20px 0; border-top: 2px solid #30363d; }
+        #menu { display: flex; width: 90%; gap: 10px; margin: 0 auto; }
+        .menu-item { flex: 1; background: #21262d; border: 1px solid #30363d; padding: 12px; border-radius: 12px; text-align: center; font-size: 12px; cursor: pointer; }
+        
+        /* Geliştirme Penceresi (Modal) */
+        #upgrade-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1c2128; border: 2px solid #00c4cc; padding: 20px; border-radius: 20px; z-index: 1000; width: 85%; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .upgrade-card { background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .close-btn { background: #ff4c4c; border: none; color: white; padding: 8px 15px; border-radius: 8px; margin-top: 15px; width: 100%; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="top-panel">
+        <div id="score-display">💰 <span id="score">0</span></div>
+        <div id="energy-info">⚡ <span id="current-energy">100</span></div>
     </div>
-</div>
 
-<script>
-    let passiveIncome = 0;
+    <div id="main-tap-area" onclick="handleTap(event)">
+        <div id="tap-icon">🎰</div>
+    </div>
 
-    function buyPassive(type) {
-        if (score >= 5000) {
-            score -= 5000;
-            passiveIncome += 10; // Saniyede +10 çip
-            tg.showAlert("Pasif gelir arttı! Artık uyurken de kazanacaksın.");
-            updateUI();
-        } else {
-            tg.showAlert("Yetersiz bakiye!");
+    <div id="upgrade-modal">
+        <h3 style="margin-top:0; color:#00c4cc;">🛠 Geliştirmeler</h3>
+        <div class="upgrade-card" onclick="buyPassive()">
+            <div>
+                <div style="font-weight:bold;">Otomatik Slot</div>
+                <div style="font-size:10px; color:#8b949e;">+10 Çip/Saniye</div>
+            </div>
+            <div style="color:#ffd700;">5000 💰</div>
+        </div>
+        <button class="close-btn" onclick="toggleUpgradeMenu()">Kapat</button>
+    </div>
+
+    <div id="bottom-panel">
+        <div id="menu">
+            <div class="menu-item" onclick="toggleUpgradeMenu()">🛠 Geliştir</div>
+            <div class="menu-item">👥 Arkadaşlar</div>
+            <div class="menu-item">🎁 Görevler</div>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        let score = parseInt(localStorage.getItem('score')) || 0;
+        let energy = 100;
+        let passiveIncome = 0;
+
+        function updateUI() {
+            document.getElementById('score').innerText = score.toLocaleString();
+            document.getElementById('current-energy').innerText = energy;
         }
-    }
 
-    // Pasif gelir döngüsü (Her saniye çalışır)
-    setInterval(() => {
-        if (passiveIncome > 0) {
-            score += passiveIncome;
-            updateUI();
+        function handleTap(e) {
+            if (energy > 0) {
+                score++;
+                energy--;
+                updateUI();
+                tg.HapticFeedback.impactOccurred('light');
+                saveData();
+            }
         }
-    }, 1000);
-</script>
+
+        function toggleUpgradeMenu() {
+            const modal = document.getElementById('upgrade-modal');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function buyPassive() {
+            if (score >= 5000) {
+                score -= 5000;
+                passiveIncome += 10;
+                updateUI();
+                saveData();
+                tg.showAlert("Pasif gelir başarıyla eklendi!");
+            } else {
+                tg.showAlert("Yetersiz çip! Daha çok tıklaman lazım.");
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('score', score);
+        }
+
+        // Pasif Gelir Döngüsü
+        setInterval(() => {
+            if (passiveIncome > 0) {
+                score += passiveIncome;
+                updateUI();
+            }
