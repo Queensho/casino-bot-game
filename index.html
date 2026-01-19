@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Tycoon | Loot Boxes</title>
+    <title>AI Tycoon | Cloud Ultimate</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap');
@@ -13,44 +13,37 @@
         body { background: #05070a; color: white; font-family: 'Rajdhani', sans-serif; margin: 0; padding: 0; height: 100vh; overflow: hidden; }
 
         /* Üst Panel */
-        #top-stats { display: flex; justify-content: space-between; width: 92%; margin: 15px auto; gap: 10px; }
+        #top-stats { display: flex; justify-content: space-between; width: 92%; margin: 15px auto; gap: 10px; z-index: 10; }
         .stat-card { flex: 1; background: var(--glass); border: 1px solid var(--neon-blue); border-radius: 12px; padding: 8px; text-align: center; }
         .stat-card.purple { border-color: var(--neon-purple); }
         .label { font-size: 9px; color: #8b949e; display: block; font-weight: bold; }
         .value { font-family: 'Orbitron'; font-size: 12px; color: #fff; }
 
-        /* Sayfalar */
-        .page { display: none; flex-direction: column; align-items: center; height: calc(100vh - 165px); overflow-y: auto; padding: 20px; width: 100%; box-sizing: border-box; }
+        /* Sayfa Yönetimi */
+        .page { display: none; flex-direction: column; align-items: center; height: calc(100vh - 170px); overflow-y: auto; padding: 20px; width: 100%; box-sizing: border-box; }
         .page.active { display: flex; }
 
-        /* Şans Kutuları Tasarımı */
-        .box-container { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .loot-box { 
-            background: rgba(30, 41, 59, 0.5); border: 2px solid var(--neon-blue); 
-            border-radius: 15px; padding: 15px; text-align: center; position: relative;
-            transition: 0.3s; cursor: pointer;
-        }
-        .loot-box:active { transform: scale(0.95); }
-        .loot-box.silver { border-color: #c0c0c0; }
-        .loot-box.gold { border-color: var(--neon-gold); box-shadow: 0 0 15px var(--neon-gold); }
-        .box-img { font-size: 40px; margin-bottom: 10px; display: block; }
-        
-        /* Açılış Animasyonu Modalı */
-        #box-modal { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.9); display: none; flex-direction: column; 
-            align-items: center; justify-content: center; z-index: 1000; 
-        }
-        .opening-box { font-size: 100px; animation: shake 0.5s infinite; }
-        
-        /* Alt Nav */
+        /* Ana Ekran */
+        #score-main { font-family: 'Orbitron'; font-size: 42px; font-weight: bold; margin: 20px 0; text-shadow: 0 0 15px var(--neon-blue); }
+        #brain-btn { width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, #1a103d, #05070a); display: flex; align-items: center; justify-content: center; font-size: 80px; cursor: pointer; border: 2px solid var(--neon-purple); box-shadow: 0 0 25px var(--neon-purple); transition: 0.1s; }
+        #brain-btn:active { transform: scale(0.92); }
+
+        /* Kutu & Market Kartları */
+        .card-item { width: 95%; background: rgba(30, 41, 59, 0.5); border: 1px solid #334155; border-radius: 15px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-action { background: var(--neon-blue); color: #000; border: none; padding: 10px 18px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 12px; }
+
+        /* Kutu Açma Modalı */
+        #loot-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; }
+        .shaking { animation: shake 0.5s infinite; font-size: 100px; }
+
+        /* Alt Navigasyon */
         #navbar { position: fixed; bottom: 0; width: 100%; background: #0d1117; display: flex; border-top: 1px solid #1a2236; padding: 12px 0; }
         .nav-item { flex: 1; text-align: center; color: #4b5563; font-size: 10px; font-weight: bold; cursor: pointer; }
         .nav-item.active { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
-        .nav-icon { font-size: 20px; display: block; }
+        .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
 
-        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(10deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(-10deg); } 100% { transform: rotate(0deg); } }
-        @keyframes glow-pop { 0% { transform: scale(1); box-shadow: 0 0 0px #fff; } 50% { transform: scale(1.2); box-shadow: 0 0 50px #fff; } 100% { transform: scale(1); box-shadow: 0 0 0px #fff; } }
+        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(8deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(-8deg); } 100% { transform: rotate(0deg); } }
+        #sync-status { font-size: 10px; color: #4b5563; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -61,103 +54,96 @@
             <span class="value" id="ui-tap">+1</span>
         </div>
         <div class="stat-card purple">
-            <span class="label">OTO KAZANÇ</span>
-            <span class="value" id="ui-pas">0/s</span>
+            <span class="label">BULUT DURUMU</span>
+            <span class="value" id="ui-cloud">ÇEVRİMDIŞI</span>
         </div>
     </div>
 
     <div id="home-page" class="page active">
-        <div id="score-main" style="font-family: Orbitron; font-size: 40px; margin: 30px 0;"><span id="score">0</span> <small style="font-size:14px; color:var(--neon-blue)">MB</small></div>
-        <div id="brain-btn" style="width:160px; height:160px; border-radius:50%; background:radial-gradient(circle, #1a103d, #05070a); display:flex; align-items:center; justify-content:center; font-size:70px; border:2px solid var(--neon-purple); cursor:pointer;" onclick="handleTap()">🧠</div>
-        <p style="margin-top:20px; color:#8b949e;">Veriler MacBook Bulutunda ✅</p>
+        <div id="score-main"><span id="score">0</span> <small style="font-size:14px; color:var(--neon-blue)">MB</small></div>
+        <div id="brain-btn" onclick="handleTap()">🧠</div>
+        <div id="sync-status">Bağlantı kuruluyor...</div>
     </div>
 
     <div id="box-page" class="page">
-        <h2 style="font-family:Orbitron; color:var(--neon-blue);">SHANS KUTULARI</h2>
-        <div class="box-container">
-            <div class="loot-box" onclick="openBox('bronze', 10000)">
-                <span class="box-img">📦</span>
-                <b>Bronz Kutu</b><br><small>10.000 MB</small>
-            </div>
-            <div class="loot-box silver" onclick="openBox('silver', 50000)">
-                <span class="box-img">🥈</span>
-                <b>Gümüş Kutu</b><br><small>50.000 MB</small>
-            </div>
-            <div class="loot-box gold" onclick="openBox('gold', 250000)">
-                <span class="box-img">👑</span>
-                <b>Altın Kutu</b><br><small>250.000 MB</small>
-            </div>
+        <h2 style="font-family:Orbitron; color:var(--neon-gold);">ŞANS KUTULARI</h2>
+        <div class="card-item">
+            <div><b>Bronz Kutu</b><br><small>Hızlı Veri Paketi</small></div>
+            <button class="btn-action" onclick="openBox(10000, 'bronze')">10K MB</button>
+        </div>
+        <div class="card-item" style="border-color: var(--neon-gold);">
+            <div><b>Altın Kutu</b><br><small>Nadir AI Parçaları</small></div>
+            <button class="btn-action" style="background:var(--neon-gold);" onclick="openBox(100000, 'gold')">100K MB</button>
         </div>
     </div>
 
-    <div id="box-modal">
-        <div id="modal-content" class="opening-box">🎁</div>
-        <h2 id="modal-text" style="margin-top:20px; font-family:Orbitron;">Kutu Açılıyor...</h2>
+    <div id="market-page" class="page">
+        <h2 style="font-family:Orbitron; color:var(--neon-blue);">YÜKSELTMELER</h2>
+        <div class="card-item">
+            <div><b>RTX 5090 GPU</b><br><small>Tık gücünü kalıcı artırır</small></div>
+            <button class="btn-action" onclick="upgradeTap()">25K MB</button>
+        </div>
+    </div>
+
+    <div id="loot-modal">
+        <div id="box-gfx" class="shaking">🎁</div>
+        <h2 id="box-reward" style="margin-top:20px; font-family:Orbitron; text-align:center;">Kutu Açılıyor...</h2>
     </div>
 
     <div id="navbar">
         <div class="nav-item active" onclick="showPage('home-page', this)"><span class="nav-icon">🏠</span>ANA</div>
         <div class="nav-item" onclick="showPage('box-page', this)"><span class="nav-icon">📦</span>KUTULAR</div>
-        <div class="nav-item" onclick="tg.showAlert('Market Yakında!')"><span class="nav-icon">🛠</span>MARKET</div>
+        <div class="nav-item" onclick="showPage('market-page', this)"><span class="nav-icon">🛠</span>MARKET</div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
+        
+        // --- AYAR: MacBook ngrok Linkin ---
+        const SERVER_URL = "https://SENIN_NGROK_ADRESIN.ngrok-free.app"; 
+        
+        let user = tg.initDataUnsafe.user || { id: "000", first_name: "Boss" };
+        let score = 0;
+        let tapPower = 1;
 
-        let score = parseFloat(localStorage.getItem('box_score')) || 0;
-        let tap = 1; let pas = 0;
+        // Bulut Giriş
+        async function cloudLogin() {
+            try {
+                const res = await fetch(`${SERVER_URL}/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ user_id: user.id, username: user.first_name })
+                });
+                const data = await res.json();
+                score = data.score;
+                document.getElementById('ui-cloud').innerText = "BAĞLANDI ✅";
+                updateUI();
+            } catch (e) {
+                document.getElementById('ui-cloud').innerText = "HATA ❌";
+            }
+        }
+
+        async function cloudSave() {
+            try {
+                await fetch(`${SERVER_URL}/save`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ user_id: user.id, score: score })
+                });
+                document.getElementById('sync-status').innerText = "Senkronize Edildi: " + new Date().toLocaleTimeString();
+            } catch (e) {}
+        }
 
         function updateUI() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString();
-            document.getElementById('ui-tap').innerText = "+" + tap;
-            document.getElementById('ui-pas').innerText = pas + "/s";
+            document.getElementById('ui-tap').innerText = "+" + tapPower;
         }
 
         function handleTap() {
-            score += tap;
-            tg.HapticFeedback.impactOccurred('light');
+            score += tapPower;
+            tg.HapticFeedback.impactOccurred('medium');
             updateUI();
-            localStorage.setItem('box_score', score);
-        }
-
-        function openBox(type, cost) {
-            if (score < cost) {
-                tg.showAlert("MB Yetersiz!");
-                return;
-            }
-
-            score -= cost;
-            updateUI();
-            
-            const modal = document.getElementById('box-modal');
-            const modalBox = document.getElementById('modal-content');
-            const modalText = document.getElementById('modal-text');
-            
-            modal.style.display = 'flex';
-            tg.HapticFeedback.notificationOccurred('warning');
-
-            setTimeout(() => {
-                modalBox.style.animation = "glow-pop 0.5s ease-out";
-                let reward = 0;
-                if (type === 'bronze') reward = Math.floor(Math.random() * 25000);
-                if (type === 'silver') reward = Math.floor(Math.random() * 150000);
-                if (type === 'gold') reward = Math.floor(Math.random() * 1000000);
-
-                modalText.innerText = "TEBRİKLER!\n+" + reward.toLocaleString() + " MB";
-                modalBox.innerText = "💎";
-                score += reward;
-                updateUI();
-                localStorage.setItem('box_score', score);
-                tg.HapticFeedback.notificationOccurred('success');
-
-                setTimeout(() => {
-                    modal.style.display = 'none';
-                    modalBox.style.animation = "shake 0.5s infinite";
-                    modalBox.innerText = "🎁";
-                    modalText.innerText = "Kutu Açılıyor...";
-                }, 3000);
-            }, 2000);
         }
 
         function showPage(id, el) {
@@ -167,7 +153,45 @@
             el.classList.add('active');
         }
 
-        updateUI();
+        function openBox(cost, type) {
+            if(score < cost) { tg.showAlert("MB Yetersiz!"); return; }
+            score -= cost;
+            updateUI();
+            
+            const modal = document.getElementById('loot-modal');
+            modal.style.display = 'flex';
+            
+            setTimeout(() => {
+                let reward = type === 'bronze' ? Math.floor(Math.random() * 20000) : Math.floor(Math.random() * 250000);
+                score += reward;
+                document.getElementById('box-gfx').classList.remove('shaking');
+                document.getElementById('box-gfx').innerText = "💎";
+                document.getElementById('box-reward').innerText = "KAZANÇ:\n" + reward.toLocaleString() + " MB";
+                tg.HapticFeedback.notificationOccurred('success');
+                
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    document.getElementById('box-gfx').classList.add('shaking');
+                    document.getElementById('box-gfx').innerText = "🎁";
+                    document.getElementById('box-reward').innerText = "Kutu Açılıyor...";
+                    updateUI();
+                    cloudSave();
+                }, 2500);
+            }, 2000);
+        }
+
+        function upgradeTap() {
+            if(score >= 25000) {
+                score -= 25000;
+                tapPower += 5;
+                tg.showAlert("Tık gücü kalıcı olarak arttı!");
+                updateUI();
+                cloudSave();
+            } else { tg.showAlert("Yetersiz MB!"); }
+        }
+
+        cloudLogin();
+        setInterval(cloudSave, 15000); // 15 saniyede bir otomatik yedekle
     </script>
 </body>
 </html>
