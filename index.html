@@ -3,214 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Tycoon | Neon Edition</title>
+    <title>AI Tycoon Premium</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap');
-
-        :root {
-            --neon-blue: #00f2ff;
-            --neon-purple: #7000ff;
-            --glow: rgba(0, 242, 255, 0.4);
-            --purple-glow: rgba(112, 0, 255, 0.4);
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        
         body { 
-            background: #05070a; color: white; font-family: 'Rajdhani', sans-serif; 
+            background: #0d1117; color: white; font-family: 'Segoe UI', sans-serif; 
             margin: 0; display: flex; flex-direction: column; align-items: center; 
             height: 100vh; overflow: hidden;
         }
 
-        /* Üst Neon Paneller */
+        /* Üst Bilgi Kutuları */
         #top-stats { 
-            display: flex; justify-content: space-between; width: 92%; 
-            margin-top: 20px; gap: 12px;
+            display: flex; justify-content: space-between; width: 90%; margin-top: 20px; gap: 10px;
         }
         .stat-card {
-            flex: 1; background: rgba(15, 23, 42, 0.7); border: 2px solid var(--neon-blue);
-            border-radius: 12px; padding: 10px; text-align: center;
-            box-shadow: 0 0 15px var(--glow); backdrop-filter: blur(5px);
+            flex: 1; background: rgba(25, 31, 45, 0.8); border: 1px solid #00f2ff;
+            border-radius: 15px; padding: 10px; text-align: center;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
         }
-        .stat-card.purple { border-color: var(--neon-purple); box-shadow: 0 0 15px var(--purple-glow); }
-        .label { font-size: 10px; color: #8b949e; display: block; margin-bottom: 4px; font-weight: bold; }
-        .value { font-family: 'Orbitron'; font-size: 14px; color: #fff; }
+        .stat-card.purple { border-color: #7000ff; box-shadow: 0 0 15px rgba(112, 0, 255, 0.1); }
+        .stat-label { font-size: 10px; color: #8b949e; display: block; margin-bottom: 5px; font-weight: bold; }
+        .stat-value { font-family: 'Orbitron'; font-size: 14px; color: #fff; }
 
-        /* Ana Gövde */
-        #main-display { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+        /* Ana Alan */
+        #main-area { flex: 1; display: flex; flex-direction: column; align-items: center; margin-top: 20px; width: 100%; }
         
-        #rank-text { font-family: 'Orbitron'; font-size: 15px; letter-spacing: 2px; margin-bottom: 8px; color: #fff; text-shadow: 0 0 10px var(--neon-blue); }
-        #prog-bg { width: 60%; height: 6px; background: #1a2236; border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
-        #prog-fill { width: 40%; height: 100%; background: var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue); transition: width 0.4s; }
+        #rank-title { font-family: 'Orbitron'; font-size: 14px; color: #fff; margin-bottom: 5px; letter-spacing: 1px; }
+        #progress-line { width: 60%; height: 6px; background: #1a2236; border-radius: 3px; margin-bottom: 15px; overflow: hidden; }
+        #progress-fill { width: 0%; height: 100%; background: #00f2ff; box-shadow: 0 0 10px #00f2ff; transition: width 0.3s; }
 
-        #score-display { font-family: 'Orbitron'; font-size: 44px; font-weight: bold; color: #fff; margin-bottom: 25px; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
-        #score-display span { color: var(--neon-blue); font-size: 22px; margin-left: 6px; }
+        #score-display { font-family: 'Orbitron'; font-size: 38px; font-weight: bold; color: #fff; margin-bottom: 20px; }
+        #score-display span { color: #00f2ff; font-size: 20px; }
 
-        /* Parlayan Beyin ve Neon Halka */
-        #brain-container { position: relative; width: 210px; height: 210px; display: flex; align-items: center; justify-content: center; }
-        #brain-ring { 
-            position: absolute; width: 100%; height: 100%; border-radius: 50%; 
-            border: 3px solid var(--neon-purple); box-shadow: 0 0 40px var(--neon-purple);
+        /* Parlayan Beyin Halkası */
+        #ai-hub {
+            width: 180px; height: 180px; border-radius: 50%;
+            background: radial-gradient(circle, #1a103d 0%, #0d1117 100%);
+            border: 2px solid #7000ff; display: flex; align-items: center; justify-content: center;
+            font-size: 80px; cursor: pointer; position: relative;
+            box-shadow: 0 0 40px rgba(112, 0, 255, 0.5);
+            transition: 0.1s;
+        }
+        #ai-hub::before {
+            content: ''; position: absolute; width: 110%; height: 110%;
+            border-radius: 50%; border: 1px solid rgba(112, 0, 255, 0.3);
             animation: pulse 2s infinite;
         }
-        #brain-btn { 
-            width: 175px; height: 175px; border-radius: 50%; 
-            background: radial-gradient(circle, #1a103d, #05070a);
-            display: flex; align-items: center; justify-content: center; font-size: 90px;
-            cursor: pointer; z-index: 5; transition: transform 0.05s;
-            border: 1px solid rgba(255,255,255,0.15);
-        }
-        #brain-btn:active { transform: scale(0.92); }
+        #ai-hub:active { transform: scale(0.95); }
 
-        /* Alt Kartlar (Neon Kaydırma Menüsü) */
-        #cards-dock {
-            width: 100%; background: rgba(10, 15, 25, 0.9); padding: 20px 0;
-            border-top: 2px solid #1a2236; display: flex; overflow-x: auto; gap: 15px; padding-left: 20px;
+        /* Alt Kartlar Alanı */
+        #bottom-scroll {
+            width: 100%; overflow-x: auto; display: flex; gap: 15px; padding: 20px;
+            background: rgba(13, 17, 23, 0.9); border-top: 1px solid #1a2236;
         }
-        #cards-dock::-webkit-scrollbar { display: none; }
-
-        .card {
-            min-width: 130px; background: #161b22; border: 1px solid #30363d;
-            border-radius: 15px; padding: 12px; text-align: center; position: relative;
-            transition: 0.3s;
+        .item-card {
+            min-width: 130px; background: #1c2128; border-radius: 15px; padding: 10px;
+            border: 1px solid #30363d; text-align: center; position: relative;
         }
-        .card:hover { border-color: var(--neon-blue); box-shadow: 0 0 10px var(--glow); }
-        .card-emoji { font-size: 30px; margin-bottom: 8px; display: block; filter: drop-shadow(0 0 8px var(--neon-blue)); }
-        .card-name { font-size: 12px; font-weight: bold; margin-bottom: 5px; display: block; }
-        .card-price { font-size: 11px; color: #8b949e; display: block; margin-bottom: 10px; }
-        .buy-btn { 
-            background: var(--neon-blue); color: #000; border: none; width: 100%; 
-            padding: 8px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 0 10px var(--glow);
+        .item-card img { width: 50px; height: 50px; margin-bottom: 10px; filter: drop-shadow(0 0 5px #00f2ff); }
+        .item-name { font-size: 11px; font-weight: bold; display: block; margin-bottom: 5px; }
+        .item-btn { 
+            background: #00f2ff; color: #000; border: none; width: 100%; 
+            padding: 8px; border-radius: 8px; font-size: 10px; font-weight: bold; cursor: pointer;
         }
-        .buy-btn:disabled { background: #1e293b; color: #4b5563; box-shadow: none; }
+        .item-btn:disabled { background: #334155; color: #8b949e; }
         
-        /* Kilitli Kart */
-        .locked {
+        /* Kilitli Kart Perdesi */
+        .lock-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); border-radius: 15px; display: flex;
-            align-items: center; justify-content: center; font-size: 11px; color: #ff4c4c; font-weight: bold;
+            background: rgba(0,0,0,0.7); border-radius: 15px; display: flex;
+            align-items: center; justify-content: center; font-size: 10px; color: #ff4c4c; font-weight: bold;
         }
 
         /* Navigasyon */
-        #navbar { width: 100%; display: flex; background: #05070a; border-top: 1px solid #1a2236; padding: 15px 0; }
-        .nav-item { flex: 1; text-align: center; color: #4b5563; font-size: 11px; font-weight: bold; }
-        .nav-item.active { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
+        #navbar {
+            width: 100%; background: #0d1117; display: flex; 
+            justify-content: space-around; padding: 15px 0; border-top: 1px solid #1a2236;
+        }
+        .nav-link { font-size: 10px; color: #8b949e; text-align: center; text-decoration: none; cursor: pointer; }
+        .nav-link.active { color: #00f2ff; font-weight: bold; }
 
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.25); opacity: 0; } }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.2); opacity: 0; } }
     </style>
 </head>
 <body>
 
     <div id="top-stats">
         <div class="stat-card">
-            <span class="label">⚡ TIK GÜCÜ</span>
-            <span class="value" id="tap-val">+1</span>
+            <span class="stat-label">⚡ TIK GÜCÜ</span>
+            <span class="stat-value" id="tap-val">+1</span>
         </div>
         <div class="stat-card purple">
-            <span class="label">⚙️ SAATLİK KAZANÇ</span>
-            <span class="value" id="pas-val">0/s</span>
+            <span class="stat-label">⚙️ SAATLİK KAZANÇ</span>
+            <span class="stat-value" id="pps-val">0/s</span>
         </div>
     </div>
 
-    <div id="main-display">
-        <div id="rank-text">GELİŞTİRİCİ AI</div>
-        <div id="prog-bg"><div id="prog-fill"></div></div>
+    <div id="main-area">
+        <div id="rank-title">STAJYER AI</div>
+        <div id="progress-line"><div id="progress-fill"></div></div>
         
-        <div id="score-display"><span id="score-val">0</span><span>MB</span></div>
+        <div id="score-display"><span id="score">0</span> <span>MB</span></div>
 
-        <div id="brain-container">
-            <div id="brain-ring"></div>
-            <div id="brain-btn" onclick="handleTap(event)">🧠</div>
+        <div id="ai-hub" onclick="handleTap(event)">🧠</div>
+        
+        <div id="combo-btn" onclick="claimDaily()" style="margin-top: 15px; color: gold; font-size: 12px; font-weight: bold; cursor: pointer; display: none;">
+            🎁 GÜNLÜK KOMBOYU AL!
         </div>
     </div>
 
-    <div id="cards-dock">
+    <div id="bottom-scroll">
         </div>
 
     <div id="navbar">
-        <div class="nav-item">MARKET</div>
-        <div class="nav-item active">ANA EKRAN</div>
-        <div class="nav-item">GÖREVLER</div>
+        <div class="nav-link">🃏 KARTLAR</div>
+        <div class="nav-link">🛠 MARKET</div>
+        <div class="nav-link active">🏠 ANA</div>
+        <div class="nav-link" onclick="tg.showAlert('Görevler Çok Yakında!')">🎁 GÖREVLER</div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        let score = parseFloat(localStorage.getItem('neon_score')) || 0;
-        let tapPower = parseInt(localStorage.getItem('neon_tap')) || 1;
-        let passive = parseInt(localStorage.getItem('neon_pas')) || 0;
+        let score = parseFloat(localStorage.getItem('ai_v21_score')) || 0;
+        let tap = parseInt(localStorage.getItem('ai_v21_tap')) || 1;
+        let passive = parseInt(localStorage.getItem('ai_v21_pas')) || 0;
 
-        const cards = [
-            { id: 1, name: "GPU V1", emoji: "⚡", price: 500, type: "tap", bonus: 2, lvl: 1 },
-            { id: 2, name: "SERVER", emoji: "🖥", price: 2000, type: "pas", bonus: 15, lvl: 1 },
-            { id: 3, name: "QUANTUM", emoji: "💠", price: 15000, type: "tap", bonus: 10, lvl: 2 },
-            { id: 4, name: "DATA CENTER", emoji: "🏢", price: 50000, type: "pas", bonus: 100, lvl: 2 }
+        const rankNames = [
+            { name: "STAJYER AI", min: 0 },
+            { name: "GELİŞTİRİCİ AI", min: 50000 },
+            { name: "SİSTEM MİMARI", min: 500000 },
+            { name: "CEO / SUPREME AI", min: 5000000 }
         ];
 
-        function getLvl() { return score < 50000 ? 1 : 2; }
+        const cards = [
+            { id: 1, name: "GPU V1", price: 500, type: "tap", bonus: 2, minLvl: 0, img: "https://cdn-icons-png.flaticon.com/512/3660/3660007.png" },
+            { id: 2, name: "SUNUCU ODASI", price: 2000, type: "pas", bonus: 10, minLvl: 0, img: "https://cdn-icons-png.flaticon.com/512/3067/3067866.png" },
+            { id: 3, name: "KUANTUM ÇİP", price: 25000, type: "tap", bonus: 20, minLvl: 50000, img: "https://cdn-icons-png.flaticon.com/512/5777/5777995.png" }
+        ];
 
         function updateUI() {
-            document.getElementById('score-val').innerText = Math.floor(score).toLocaleString();
-            document.getElementById('tap-val').innerText = "+" + tapPower;
-            document.getElementById('pas-val').innerText = passive.toLocaleString() + "/s";
+            document.getElementById('score').innerText = Math.floor(score).toLocaleString();
+            document.getElementById('tap-val').innerText = "+" + tap;
+            document.getElementById('pps-val').innerText = (passive * 3600).toLocaleString() + "/sa";
             
-            let lvl = getLvl();
-            document.getElementById('rank-text').innerText = lvl === 1 ? "STAJYER AI" : "GELİŞTİRİCİ AI";
+            // Rank ve Progress
+            let currentRank = rankNames[0];
+            rankNames.forEach(r => { if(score >= r.min) currentRank = r; });
+            document.getElementById('rank-title').innerText = currentRank.name;
             
-            // Progress Fill
-            let nextRank = lvl === 1 ? 50000 : 500000;
-            let currentProg = (score / nextRank) * 100;
-            document.getElementById('prog-fill').style.width = Math.min(currentProg, 100) + "%";
+            let nextRank = rankNames.find(r => r.min > score) || { min: score * 1.5 };
+            let prog = ((score - currentRank.min) / (nextRank.min - currentRank.min)) * 100;
+            document.getElementById('progress-fill').style.width = Math.min(prog, 100) + "%";
+
+            // Günlük Kombo Kontrol
+            let lastClaim = localStorage.getItem('ai_v21_last_claim');
+            if(lastClaim !== new Date().toDateString()) {
+                document.getElementById('combo-btn').style.display = 'block';
+            } else {
+                document.getElementById('combo-btn').style.display = 'none';
+            }
 
             renderCards();
         }
 
         function renderCards() {
-            const dock = document.getElementById('cards-dock');
-            const currentLvl = getLvl();
-            dock.innerHTML = '';
-            
-            cards.forEach(c => {
-                const isLocked = currentLvl < c.lvl;
+            const container = document.getElementById('bottom-scroll');
+            container.innerHTML = '';
+            cards.forEach(card => {
+                const isLocked = score < card.minLvl;
                 const cardDiv = document.createElement('div');
-                cardDiv.className = 'card';
+                cardDiv.className = 'item-card';
                 cardDiv.innerHTML = `
-                    <span class="card-emoji">${c.emoji}</span>
-                    <span class="card-name">${c.name}</span>
-                    <span class="card-price">${c.price.toLocaleString()} MB</span>
-                    <button class="buy-btn" ${isLocked || score < c.price ? 'disabled' : ''} onclick="buy(${c.id})">AL</button>
-                    ${isLocked ? `<div class="locked">🔒 Lvl ${c.lvl}</div>` : ''}
+                    <img src="${card.img}">
+                    <span class="item-name">${card.name}</span>
+                    <button class="item-btn" ${isLocked || score < card.price ? 'disabled' : ''} onclick="buy(${card.id})">
+                        ${card.price.toLocaleString()} MB
+                    </button>
+                    ${isLocked ? `<div class="lock-overlay">🔒 Lvl ${card.minLvl.toLocaleString()}</div>` : ''}
                 `;
-                dock.appendChild(cardDiv);
+                container.appendChild(cardDiv);
             });
         }
 
         function handleTap(e) {
-            score += tapPower;
+            score += tap;
             tg.HapticFeedback.impactOccurred('medium');
             updateUI();
             save();
         }
 
         function buy(id) {
-            const c = cards.find(x => x.id === id);
-            if(score >= c.price) {
-                score -= c.price;
-                if(c.type === "tap") tapPower += c.bonus;
-                else passive += c.bonus;
-                tg.HapticFeedback.notificationOccurred('success');
+            const card = cards.find(c => c.id === id);
+            if (score >= card.price) {
+                score -= card.price;
+                if (card.type === 'tap') tap += card.bonus;
+                else passive += (card.bonus / 3600);
                 updateUI(); save();
+                tg.showAlert("Yükseltme Alındı!");
             }
         }
 
-        function save() {
-            localStorage.setItem('neon_score', score);
-            localStorage.setItem('neon_tap', tapPower);
-            localStorage.setItem('neon_pas', passive);
+        function claimDaily() {
+            score += 100000;
+            localStorage.setItem('ai_v21_last_claim', new Date().toDateString());
+            tg.showAlert("Günlük Kombo: 100.000 MB Hesabına Eklendi!");
+            updateUI(); save();
         }
 
-        setInterval(() => { if(passive > 0) { score += (passive / 10); updateUI(); } }, 100);
+        function save() {
+            localStorage.setItem('ai_v21_score', score);
+            localStorage.setItem('ai_v21_tap', tap);
+            localStorage.setItem('ai_v21_pas', passive);
+        }
+
+        setInterval(() => {
+            if (passive > 0) score += (passive / 10);
+            updateUI();
+        }, 100);
+
         updateUI();
     </script>
 </body>
