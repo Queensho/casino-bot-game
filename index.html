@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Tycoon: Evolution</title>
+    <title>AI Tycoon: Card Evo</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono&display=swap');
@@ -23,17 +23,21 @@
         
         #score { font-family: 'Orbitron'; font-size: 40px; font-weight: bold; text-shadow: 0 0 20px var(--main-color); margin-top: 10px; }
         
+        #progress-container { width: 80%; height: 6px; background: #1a2236; border-radius: 3px; margin-top: 20px; overflow: hidden; }
+        #progress-bar { width: 0%; height: 100%; background: var(--main-color); transition: width 0.3s; }
+
         #ai-hub { font-size: 100px; margin-top: 25px; cursor: pointer; transition: transform 0.1s; position: relative; }
         #ai-hub::after { content: ''; position: absolute; width: 150%; height: 150%; top: -25%; left: -25%; background: radial-gradient(circle, var(--bg-glow) 0%, transparent 70%); z-index: -1; }
         #ai-hub:active { transform: scale(0.9); }
 
-        /* İlerleme Çubuğu */
-        #progress-container { width: 80%; height: 6px; background: #1a2236; border-radius: 3px; margin-top: 20px; overflow: hidden; }
-        #progress-bar { width: 0%; height: 100%; background: var(--main-color); transition: width 0.3s; }
-
         .modal { position: fixed; bottom: 70px; width: 100%; background: #0f172a; border-radius: 20px 20px 0 0; border-top: 2px solid var(--main-color); padding: 20px 0; display: none; z-index: 100; max-height: 60vh; overflow-y: auto; }
-        .card { background: #1e293b; margin: 10px 20px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
-        .btn { background: var(--main-color); color: black; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .card-item { background: #1e293b; margin: 10px 20px; padding: 15px; border-radius: 12px; display: flex; align-items: center; border: 1px solid #334155; }
+        .card-item img { width: 60px; height: 60px; border-radius: 8px; margin-right: 15px; object-fit: cover; }
+        .card-content { flex: 1; }
+        .card-title { font-weight: bold; color: var(--main-color); }
+        .card-price { font-size: 12px; color: #8b949e; }
+        .buy-btn { background: var(--main-color); color: black; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-left: 10px; transition: 0.3s; }
+        .buy-btn:disabled { background: #334155; color: #64748b; }
 
         #nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #05070a; border-top: 1px solid #1a2236; padding: 15px 0; }
         .nav-item { flex: 1; text-align: center; font-size: 10px; color: #64748b; cursor: pointer; }
@@ -54,22 +58,30 @@
 
     <div id="ai-hub" onclick="handleTap(event)">🤖</div>
 
+    <div id="cards-modal" class="modal">
+        <h3 style="text-align: center;">KARTLAR</h3>
+        <div id="card-list">
+            </div>
+        <button onclick="toggleModal('', false)" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 10px; border-radius: 8px;">KAPAT</button>
+    </div>
+
     <div id="shop-modal" class="modal">
         <h3 style="text-align: center;">MARKET</h3>
-        <div class="card"><div><b>H100 GPU</b><br><small>+10/sn (10.000 MB)</small></div><button class="btn" onclick="buy('passive', 10000, 10)">AL</button></div>
+        <div class="card-item"><div><b>H100 GPU</b><br><small>+10/sn (10.000 MB)</small></div><button class="buy-btn" onclick="buy('passive', 10000, 10)">AL</button></div>
         <button onclick="toggleModal('', false)" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 10px; border-radius: 8px;">KAPAT</button>
     </div>
 
     <div id="tasks-modal" class="modal">
         <h3 style="text-align: center;">GÖREVLER</h3>
-        <div class="card"><div><b>Kanala Katıl</b><br><small>+50k MB</small></div><button class="btn" onclick="doTask('t1', 'https://t.me/Kanal', 50000)">KATIL</button></div>
+        <div class="card-item"><div><b>Kanala Katıl</b><br><small>+50k MB</small></div><button class="buy-btn" onclick="doTask('t1', 'https://t.me/Kanal', 50000)">KATIL</button></div>
         <button onclick="toggleModal('', false)" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 10px; border-radius: 8px;">KAPAT</button>
     </div>
 
     <div id="nav">
+        <div class="nav-item" onclick="toggleModal('cards-modal', true)">🃏 KARTLAR</div>
         <div class="nav-item" onclick="toggleModal('shop-modal', true)">🛠 MARKET</div>
-        <div class="nav-item" onclick="toggleModal('tasks-modal', true)">🎁 GÖREVLER</div>
         <div class="nav-item active" onclick="toggleModal('', false)">💻 ANA</div>
+        <div class="nav-item" onclick="toggleModal('tasks-modal', true)">🎁 GÖREVLER</div>
         <div class="nav-item" onclick="tg.showAlert('Yakında!')">👥 EKİP</div>
     </div>
 
@@ -77,9 +89,9 @@
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        let score = parseFloat(localStorage.getItem('ai_evo_score')) || 0;
-        let passive = parseInt(localStorage.getItem('ai_evo_pas')) || 0;
-        let tapPower = 1;
+        let score = parseFloat(localStorage.getItem('ai_card_score')) || 0;
+        let passive = parseInt(localStorage.getItem('ai_card_pas')) || 0;
+        let tapPower = parseInt(localStorage.getItem('ai_card_tap')) || 1; // Tap power da kartlardan etkilenecek
 
         const ranks = [
             { name: "STAJYER AI", emoji: "🤖", min: 0, class: "rank-1" },
@@ -88,13 +100,23 @@
             { name: "CEO / SUPREME AI", emoji: "🌌", min: 5000000, class: "rank-4" }
         ];
 
+        const cards = [
+            { id: 'gpu_v1', name: 'GPU V1', desc: '+5 Tık Gücü', type: 'tap', amount: 5, price: 1000, img: 'https://cdn-icons-png.flaticon.com/512/3660/3660007.png' },
+            { id: 'server_rack', name: 'Sunucu Odası', desc: '+10/sn Pasif', type: 'passive', amount: 10, price: 5000, img: 'https://cdn-icons-png.flaticon.com/512/3067/3067866.png' },
+            { id: 'quantum_chip', name: 'Kuantum Çip', desc: '+20 Tık Gücü', type: 'tap', amount: 20, price: 25000, img: 'https://cdn-icons-png.flaticon.com/512/5777/5777995.png' },
+            { id: 'data_center', name: 'Veri Merkezi', desc: '+50/sn Pasif', type: 'passive', amount: 50, price: 100000, img: 'https://cdn-icons-png.flaticon.com/512/1087/1087798.png' }
+        ];
+
+        let ownedCards = JSON.parse(localStorage.getItem('ai_card_owned')) || {};
+
         function updateUI() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString();
             document.getElementById('pps-val').innerText = passive + "/s";
+            document.getElementById('tap-val').innerText = "+" + tapPower;
             
-            // Rank Belirleme
+            // Rank
             let currentRank = ranks[0];
-            let nextRankScore = ranks[1].min;
+            let nextRankScore = ranks[1] ? ranks[1].min : score;
 
             for (let i = ranks.length - 1; i >= 0; i--) {
                 if (score >= ranks[i].min) {
@@ -108,10 +130,38 @@
             document.getElementById('rank-display').innerText = currentRank.name;
             document.getElementById('ai-hub').innerText = currentRank.emoji;
             
-            // Bar İlerlemesi
+            // Progress Bar
             let progress = ((score - currentRank.min) / (nextRankScore - currentRank.min)) * 100;
             if (score >= ranks[ranks.length-1].min) progress = 100;
             document.getElementById('progress-bar').style.width = progress + "%";
+
+            renderCards();
+        }
+
+        function renderCards() {
+            const cardListDiv = document.getElementById('card-list');
+            cardListDiv.innerHTML = ''; // Temizle
+            cards.forEach(card => {
+                const isOwned = ownedCards[card.id];
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card-item';
+                cardElement.innerHTML = `
+                    <img src="${card.img}" alt="${card.name}">
+                    <div class="card-content">
+                        <div class="card-title">${card.name}</div>
+                        <div class="card-price">${card.desc} - ${card.price.toLocaleString()} MB</div>
+                    </div>
+                    <button class="buy-btn" id="buy-${card.id}" ${isOwned ? 'disabled' : ''} onclick="buyCard('${card.id}')">
+                        ${isOwned ? 'ALINDI' : 'AL'}
+                    </button>
+                `;
+                cardListDiv.appendChild(cardElement);
+
+                // Disable the button if not enough score
+                if (!isOwned && score < card.price) {
+                    document.getElementById(`buy-${card.id}`).disabled = true;
+                }
+            });
         }
 
         function handleTap(e) {
@@ -120,27 +170,63 @@
             updateUI(); save();
         }
 
-        function buy(type, cost, amount) {
-            if (score >= cost) {
-                score -= cost;
-                passive += amount;
+        function buyCard(cardId) {
+            const card = cards.find(c => c.id === cardId);
+            if (!card || ownedCards[cardId]) return;
+
+            if (score >= card.price) {
+                score -= card.price;
+                ownedCards[cardId] = true;
+                if (card.type === 'tap') tapPower += card.amount;
+                if (card.type === 'passive') passive += card.amount;
+                
                 updateUI(); save();
-                tg.showAlert("Yükseltme Başarılı!");
-            } else { tg.showAlert("Yetersiz Veri!"); }
+                tg.showAlert(`"${card.name}" kartı alındı!`);
+            } else {
+                tg.showAlert("Yetersiz Veri!");
+            }
+        }
+
+        function doTask(taskId, link, reward) {
+            if (localStorage.getItem(taskId)) return; // Görev zaten yapılmış
+            tg.openLink(link);
+            setTimeout(() => { // Kullanıcının kanala katılmasını beklemek için
+                score += reward;
+                localStorage.setItem(taskId, 'true'); // Görevi tamamlandı işaretle
+                updateUI(); save();
+                tg.showAlert("Ödül Hesabına Tanımlandı: " + reward.toLocaleString() + " MB!");
+            }, 3000); // 3 saniye bekle
         }
 
         function toggleModal(id, show) {
             document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-            if (show) document.getElementById(id).style.display = 'block';
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            
+            if (show) {
+                document.getElementById(id).style.display = 'block';
+                // Aktif butonu vurgula
+                const activeNav = document.querySelector(`.nav-item[onclick*="toggleModal('${id}', true)"]`);
+                if(activeNav) activeNav.classList.add('active');
+            } else {
+                // Ana ekran butonu aktif olsun
+                document.querySelector('.nav-item.active').classList.add('active'); // Eğer yoksa ilkine ekle
+                document.querySelector('.nav-item[onclick*="toggleModal('', false)"]').classList.add('active');
+            }
         }
 
         function save() {
-            localStorage.setItem('ai_evo_score', score);
-            localStorage.setItem('ai_evo_pas', passive);
+            localStorage.setItem('ai_card_score', score);
+            localStorage.setItem('ai_card_tap', tapPower);
+            localStorage.setItem('ai_card_pas', passive);
+            localStorage.setItem('ai_card_owned', JSON.stringify(ownedCards));
         }
 
-        setInterval(() => { score += (passive / 10); updateUI(); }, 100);
-        updateUI();
+        setInterval(() => { 
+            score += (passive / 10); // Pasif kazanç her 100ms'de ekleniyor (saniyede 10 kez)
+            updateUI(); 
+        }, 100);
+
+        updateUI(); // Sayfa yüklendiğinde bir kez çalıştır
     </script>
 </body>
 </html>
