@@ -3,112 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Tycoon Pro</title>
+    <title>AI Tycoon: Evolution</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-        body { background: #05070a; color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; user-select: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono&display=swap');
+        
+        body { background: #05070a; color: white; font-family: 'Roboto Mono', monospace; margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; transition: background 0.5s; }
+        
+        /* Seviye Bazlı Renkler */
+        .rank-1 { --main-color: #00f2ff; --bg-glow: rgba(0, 242, 255, 0.2); } /* Stajyer */
+        .rank-2 { --main-color: #7000ff; --bg-glow: rgba(112, 0, 255, 0.2); } /* Geliştirici */
+        .rank-3 { --main-color: #ff0055; --bg-glow: rgba(255, 0, 85, 0.2); } /* Mimar */
+        .rank-4 { --main-color: #ffd700; --bg-glow: rgba(255, 215, 0, 0.2); } /* CEO */
+
         #header { width: 90%; display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #1a2236; }
-        .stat-item { text-align: center; background: #0f172a; padding: 5px 10px; border-radius: 10px; border: 1px solid #7000ff; flex: 1; margin: 0 5px; }
-        .stat-val { font-family: 'Orbitron', sans-serif; font-size: 11px; color: #00f2ff; }
-        #score { font-family: 'Orbitron', sans-serif; font-size: 40px; font-weight: bold; text-shadow: 0 0 20px #00f2ff; margin-top: 20px; }
-        #ai-hub { font-size: 100px; margin-top: 30px; cursor: pointer; transition: transform 0.1s; }
+        .stat-item { text-align: center; background: #0f172a; padding: 5px 10px; border-radius: 10px; border: 1px solid var(--main-color); flex: 1; margin: 0 5px; transition: 0.3s; }
+        
+        #rank-display { margin-top: 15px; font-family: 'Orbitron'; font-size: 14px; color: var(--main-color); text-transform: uppercase; letter-spacing: 2px; }
+        
+        #score { font-family: 'Orbitron'; font-size: 40px; font-weight: bold; text-shadow: 0 0 20px var(--main-color); margin-top: 10px; }
+        
+        #ai-hub { font-size: 100px; margin-top: 25px; cursor: pointer; transition: transform 0.1s; position: relative; }
+        #ai-hub::after { content: ''; position: absolute; width: 150%; height: 150%; top: -25%; left: -25%; background: radial-gradient(circle, var(--bg-glow) 0%, transparent 70%); z-index: -1; }
         #ai-hub:active { transform: scale(0.9); }
-        
-        .modal { position: fixed; bottom: 70px; width: 100%; background: #0f172a; border-radius: 20px 20px 0 0; border-top: 2px solid #7000ff; padding: 20px 0; display: none; z-index: 100; max-height: 60vh; overflow-y: auto; }
+
+        /* İlerleme Çubuğu */
+        #progress-container { width: 80%; height: 6px; background: #1a2236; border-radius: 3px; margin-top: 20px; overflow: hidden; }
+        #progress-bar { width: 0%; height: 100%; background: var(--main-color); transition: width 0.3s; }
+
+        .modal { position: fixed; bottom: 70px; width: 100%; background: #0f172a; border-radius: 20px 20px 0 0; border-top: 2px solid var(--main-color); padding: 20px 0; display: none; z-index: 100; max-height: 60vh; overflow-y: auto; }
         .card { background: #1e293b; margin: 10px 20px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
-        .btn { background: #7000ff; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-done { background: #1abd44; }
-        
+        .btn { background: var(--main-color); color: black; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+
         #nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #05070a; border-top: 1px solid #1a2236; padding: 15px 0; }
         .nav-item { flex: 1; text-align: center; font-size: 10px; color: #64748b; cursor: pointer; }
-        .active { color: #00f2ff; font-weight: bold; }
+        .active { color: var(--main-color); font-weight: bold; }
     </style>
 </head>
-<body>
+<body class="rank-1">
 
     <div id="header">
-        <div class="stat-item"><span class="stat-val" id="tap-val">+1</span></div>
-        <div class="stat-item"><span class="stat-val" id="pps-val">0/s</span></div>
+        <div class="stat-item"><span>⚡</span><span id="tap-val" style="color:var(--main-color)">+1</span></div>
+        <div class="stat-item"><span>⚙️</span><span id="pps-val" style="color:var(--main-color)">0/s</span></div>
     </div>
 
+    <div id="rank-display">STAJYER AI</div>
     <div id="score">0</div>
-    <div style="font-size: 10px; color: #5c6b89;">TOPLANAN VERİ (MB)</div>
+    
+    <div id="progress-container"><div id="progress-bar"></div></div>
 
-    <div id="ai-hub" onclick="handleTap(event)">🚀</div>
-
-    <div id="tasks-modal" class="modal">
-        <h3 style="text-align: center; margin-top: 0;">VERİ MADENCİLİĞİ</h3>
-        <div class="card">
-            <div><b>Telegram Kanalı</b><br><small>+50.000 MB</small></div>
-            <button id="task1-btn" class="btn" onclick="doTask('task1', 'https://t.me/KANAL_LINKIN', 50000)">KATIL</button>
-        </div>
-        <div class="card">
-            <div><b>X (Twitter) Takip</b><br><small>+30.000 MB</small></div>
-            <button id="task2-btn" class="btn" onclick="doTask('task2', 'https://x.com/HESAP_LINKIN', 30000)">TAKİP ET</button>
-        </div>
-        <button onclick="toggleModal('', false)" style="width: 90%; margin: 10px 5%; background: #334155; border: none; color: white; padding: 10px; border-radius: 8px;">KAPAT</button>
-    </div>
+    <div id="ai-hub" onclick="handleTap(event)">🤖</div>
 
     <div id="shop-modal" class="modal">
-        <h3 style="text-align: center; margin-top: 0;">MARKET</h3>
-        <div class="card">
-            <div><b>GPU V1</b><br><small>+5/sn (5000 MB)</small></div>
-            <button class="btn" onclick="buy('passive', 5000, 5)">AL</button>
-        </div>
-        <button onclick="toggleModal('', false)" style="width: 90%; margin: 10px 5%; background: #334155; border: none; color: white; padding: 10px; border-radius: 8px;">KAPAT</button>
+        <h3 style="text-align: center;">MARKET</h3>
+        <div class="card"><div><b>H100 GPU</b><br><small>+10/sn (10.000 MB)</small></div><button class="btn" onclick="buy('passive', 10000, 10)">AL</button></div>
+        <button onclick="toggleModal('', false)" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 10px; border-radius: 8px;">KAPAT</button>
     </div>
 
-    <div id="friends-modal" class="modal">
-        <h3 style="text-align: center; margin-top: 0;">EKİBİNİ KUR</h3>
-        <div class="card"><div id="ref-link" style="font-size: 10px;">Yükleniyor...</div><button class="btn" onclick="copyRef()">KOPYALA</button></div>
-        <button onclick="toggleModal('', false)" style="width: 90%; margin: 10px 5%; background: #334155; border: none; color: white; padding: 10px; border-radius: 8px;">KAPAT</button>
+    <div id="tasks-modal" class="modal">
+        <h3 style="text-align: center;">GÖREVLER</h3>
+        <div class="card"><div><b>Kanala Katıl</b><br><small>+50k MB</small></div><button class="btn" onclick="doTask('t1', 'https://t.me/Kanal', 50000)">KATIL</button></div>
+        <button onclick="toggleModal('', false)" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 10px; border-radius: 8px;">KAPAT</button>
     </div>
 
     <div id="nav">
         <div class="nav-item" onclick="toggleModal('shop-modal', true)">🛠 MARKET</div>
         <div class="nav-item" onclick="toggleModal('tasks-modal', true)">🎁 GÖREVLER</div>
         <div class="nav-item active" onclick="toggleModal('', false)">💻 ANA</div>
-        <div class="nav-item" onclick="toggleModal('friends-modal', true)">👥 EKİP</div>
+        <div class="nav-item" onclick="tg.showAlert('Yakında!')">👥 EKİP</div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
-        let user = tg.initDataUnsafe.user;
 
-        let score = parseFloat(localStorage.getItem('ty_v3_score')) || 0;
-        let tapPower = parseInt(localStorage.getItem('ty_v3_tap')) || 1;
-        let passive = parseInt(localStorage.getItem('ty_v3_pas')) || 0;
+        let score = parseFloat(localStorage.getItem('ai_evo_score')) || 0;
+        let passive = parseInt(localStorage.getItem('ai_evo_pas')) || 0;
+        let tapPower = 1;
+
+        const ranks = [
+            { name: "STAJYER AI", emoji: "🤖", min: 0, class: "rank-1" },
+            { name: "GELİŞTİRİCİ AI", emoji: "💻", min: 50000, class: "rank-2" },
+            { name: "SİSTEM MİMARI", emoji: "🧠", min: 500000, class: "rank-3" },
+            { name: "CEO / SUPREME AI", emoji: "🌌", min: 5000000, class: "rank-4" }
+        ];
 
         function updateUI() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString();
-            document.getElementById('tap-val').innerText = "+" + tapPower;
             document.getElementById('pps-val').innerText = passive + "/s";
-            document.getElementById('ref-link').innerText = "t.me/BOT_KULLANICI_ADI?start=" + (user ? user.id : "boss");
             
-            // Tamamlanan görevleri kontrol et
-            if(localStorage.getItem('task1')) { document.getElementById('task1-btn').innerText = "ALINDI"; document.getElementById('task1-btn').className = "btn btn-done"; }
-            if(localStorage.getItem('task2')) { document.getElementById('task2-btn').innerText = "ALINDI"; document.getElementById('task2-btn').className = "btn btn-done"; }
+            // Rank Belirleme
+            let currentRank = ranks[0];
+            let nextRankScore = ranks[1].min;
+
+            for (let i = ranks.length - 1; i >= 0; i--) {
+                if (score >= ranks[i].min) {
+                    currentRank = ranks[i];
+                    nextRankScore = ranks[i+1] ? ranks[i+1].min : score;
+                    break;
+                }
+            }
+
+            document.body.className = currentRank.class;
+            document.getElementById('rank-display').innerText = currentRank.name;
+            document.getElementById('ai-hub').innerText = currentRank.emoji;
+            
+            // Bar İlerlemesi
+            let progress = ((score - currentRank.min) / (nextRankScore - currentRank.min)) * 100;
+            if (score >= ranks[ranks.length-1].min) progress = 100;
+            document.getElementById('progress-bar').style.width = progress + "%";
         }
 
         function handleTap(e) {
             score += tapPower;
-            tg.HapticFeedback.impactOccurred('light');
-            updateUI();
-            save();
+            tg.HapticFeedback.impactOccurred('medium');
+            updateUI(); save();
         }
 
-        function doTask(taskId, link, reward) {
-            if (localStorage.getItem(taskId)) return;
-            tg.openLink(link);
-            setTimeout(() => {
-                score += reward;
-                localStorage.setItem(taskId, 'true');
-                updateUI();
-                save();
-                tg.showAlert("Ödül Hesabına Tanımlandı: " + reward + " MB!");
-            }, 3000);
+        function buy(type, cost, amount) {
+            if (score >= cost) {
+                score -= cost;
+                passive += amount;
+                updateUI(); save();
+                tg.showAlert("Yükseltme Başarılı!");
+            } else { tg.showAlert("Yetersiz Veri!"); }
         }
 
         function toggleModal(id, show) {
@@ -116,26 +134,9 @@
             if (show) document.getElementById(id).style.display = 'block';
         }
 
-        function buy(type, cost, amount) {
-            if (score >= cost) {
-                score -= cost;
-                if (type === 'passive') passive += amount;
-                updateUI(); save();
-                tg.showAlert("Başarılı!");
-            } else { tg.showAlert("Yetersiz Veri!"); }
-        }
-
-        function copyRef() {
-            let link = "https://" + document.getElementById('ref-link').innerText;
-            const el = document.createElement('textarea'); el.value = link;
-            document.body.appendChild(el); el.select(); document.execCommand('copy');
-            document.body.removeChild(el); tg.showAlert("Kopyalandı!");
-        }
-
         function save() {
-            localStorage.setItem('ty_v3_score', score);
-            localStorage.setItem('ty_v3_tap', tapPower);
-            localStorage.setItem('ty_v3_pas', passive);
+            localStorage.setItem('ai_evo_score', score);
+            localStorage.setItem('ai_evo_pas', passive);
         }
 
         setInterval(() => { score += (passive / 10); updateUI(); }, 100);
