@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Underground Casino King</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: 'Roboto Mono', monospace;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #top-panel {
+            width: 90%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            margin-top: 15px;
+        }
+
+        #score-display {
+            font-size: 26px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        #rank-display {
+            background: rgba(88, 166, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid #58a6ff;
+            color: #58a6ff;
+            font-size: 14px;
+        }
+
+        #main-tap-area {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, #1a1a1a 0%, #0d1117 100%);
+            border: 8px solid #00c4cc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 40px rgba(0, 196, 204, 0.4);
+            transition: transform 0.05s ease-out;
+        }
+
+        #main-tap-area:active {
+            transform: scale(0.94);
+        }
+
+        #tap-icon {
+            font-size: 100px;
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+        }
+
+        .floating-text {
+            position: absolute;
+            color: #00ff00;
+            font-weight: bold;
+            font-size: 32px;
+            animation: floatAndFade 0.8s ease-out forwards;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        @keyframes floatAndFade {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-120px); }
+        }
+
+        #bottom-panel {
+            width: 100%;
+            background-color: #161b22;
+            padding: 20px 0;
+            border-top: 2px solid #30363d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #energy-container {
+            width: 85%;
+            margin-bottom: 15px;
+        }
+
+        #energy-bar-bg {
+            width: 100%;
+            height: 12px;
+            background: #21262d;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #30363d;
+        }
+
+        #energy-bar-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #00c4cc, #58a6ff);
+            transition: width 0.2s;
+        }
+
+        #energy-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-top: 5px;
+            color: #8b949e;
+        }
+
+        #menu {
+            display: flex;
+            width: 90%;
+            gap: 10px;
+        }
+
+        .menu-item {
+            flex: 1;
+            background: #21262d;
+            border: 1px solid #30363d;
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 12px;
+            color: #c9d1d9;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="top-panel">
+        <div id="score-display">💰 <span id="score">0</span></div>
+        <div id="rank-display">Bronz Lig</div>
+    </div>
+
+    <div id="main-tap-area" onclick="handleTap(event)">
+        <div id="tap-icon">🎰</div>
+    </div>
+
+    <div id="bottom-panel">
+        <div id="energy-container">
+            <div id="energy-bar-bg">
+                <div id="energy-bar-fill"></div>
+            </div>
+            <div id="energy-info">
+                <span>⚡ Enerji</span>
+                <span><span id="current-energy">100</span>/100</span>
+            </div>
+        </div>
+        
+        <div id="menu">
+            <div class="menu-item">🛠 Geliştir</div>
+            <div class="menu-item">👥 Arkadaşlar</div>
+            <div class="menu-item">🎁 Görevler</div>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+
+        let score = parseInt(localStorage.getItem('casino_score')) || 0;
+        let energy = parseInt(localStorage.getItem('casino_energy')) || 100;
+        const maxEnergy = 100;
+
+        function updateUI() {
+            document.getElementById('score').innerText = score.toLocaleString();
+            document.getElementById('current-energy').innerText = energy;
+            document.getElementById('energy-bar-fill').style.width = (energy / maxEnergy * 100) + "%";
+        }
+
+        function handleTap(e) {
+            if (energy > 0) {
+                score += 1;
+                energy -= 1;
+                
+                // Efekt oluştur
+                const x = e.clientX;
+                const y = e.clientY;
+                createParticle(x, y);
+
+                tg.HapticFeedback.impactOccurred('medium');
+                updateUI();
+                saveData();
+            } else {
+                tg.HapticFeedback.notificationOccurred('error');
+            }
+        }
+
+        function createParticle(x, y) {
+            const p = document.createElement('div');
+            p.className = 'floating-text';
+            p.innerText = '+1';
+            p.style.left = x + 'px';
+            p.style.top = y + 'px';
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 800);
+        }
+
+        function saveData() {
+            localStorage.setItem('casino_score', score);
+            localStorage.setItem('casino_energy', energy);
+        }
+
+        // Enerji Yenileme (3 saniyede 1)
+        setInterval(() => {
+            if (energy < maxEnergy) {
+                energy++;
+                updateUI();
+                saveData();
+            }
+        }, 3000);
+
+        updateUI();
+    </script>
+</body>
+</html>
