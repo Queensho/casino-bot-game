@@ -1,56 +1,42 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI TYCOON</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #05070a; color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; user-select: none; }
-        #score { font-size: 48px; font-weight: bold; margin-bottom: 20px; color: #00f2ff; }
-        #ai-btn { width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, #7000ff, #1a103d); border: 5px solid #00f2ff; font-size: 80px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(112,0,255,0.5); transition: transform 0.05s; }
-        #ai-btn:active { transform: scale(0.9); }
-        .stat-box { position: absolute; top: 20px; display: flex; gap: 20px; }
-        .stat { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #00f2ff; }
+        body { background: #080a12; color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        #score { font-size: 50px; font-weight: bold; color: #00d4ff; text-shadow: 0 0 20px #00d4ff; margin-bottom: 20px; }
+        #ai-button { width: 220px; height: 220px; border-radius: 50%; background: #7000ff; border: 5px solid #00d4ff; font-size: 100px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(112,0,255,0.4); }
+        #ai-button:active { transform: scale(0.9); }
+        .info { position: absolute; top: 10px; font-size: 12px; color: #5c6b89; }
     </style>
 </head>
 <body>
-
-    <div class="stat-box">
-        <div class="stat">Tık: <span id="tap-power">1</span></div>
-        <div class="stat">Pasif: <span id="passive-power">0</span></div>
-    </div>
-
+    <div class="info">AI TYCOON v1.0 - GÜVENLİ MOD</div>
     <div id="score">0</div>
-    
-    <div id="ai-btn" onclick="tıkla()">🧠</div>
+    <div id="ai-button" onclick="handleTap()">🧠</div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Verileri temiz bir isimle sakla (Hata olmaması için ismi değiştirdik)
-        let bakiye = parseFloat(localStorage.getItem('ai_v10_score')) || 0;
-        let guc = parseInt(localStorage.getItem('ai_v10_tap')) || 1;
+        // Veriyi çek
+        let data = parseInt(localStorage.getItem('my_ai_data')) || 0;
 
-        function guncelle() {
-            document.getElementById('score').innerText = Math.floor(bakiye).toLocaleString();
-            document.getElementById('tap-power').innerText = guc;
+        function updateDisplay() {
+            document.getElementById('score').innerText = data.toLocaleString();
         }
 
-        function tıkla() {
-            bakiye += guc;
+        function handleTap() {
+            data += 1; // Her tıklamada 1 artır
+            updateDisplay();
+            localStorage.setItem('my_ai_data', data); // Kaydet
             tg.HapticFeedback.impactOccurred('medium'); // Titreşim
-            guncelle();
-            kaydet();
         }
 
-        function kaydet() {
-            localStorage.setItem('ai_v10_score', bakiye);
-            localStorage.setItem('ai_v10_tap', guc);
-        }
-
-        guncelle();
+        updateDisplay();
     </script>
 </body>
 </html>
