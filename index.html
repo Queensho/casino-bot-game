@@ -3,100 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Tycoon Pro</title>
+    <title>AI Tycoon | Global Empire</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-        body { background: #05070a; color: white; font-family: sans-serif; margin: 0; padding: 0; text-align: center; }
-        .page { display: none; padding: 20px; height: 80vh; overflow-y: auto; flex-direction: column; align-items: center; }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap');
+        
+        :root { --neon-blue: #00f2ff; --neon-purple: #7000ff; --neon-gold: #ffcc00; --bg: #05070a; }
+
+        body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; padding: 0; height: 100vh; overflow: hidden; user-select: none; }
+        
+        /* Üst Panel */
+        .header { display: flex; justify-content: space-around; padding: 15px; background: rgba(13, 17, 23, 0.9); border-bottom: 1px solid #1a2236; }
+        .stat-box { text-align: center; }
+        .stat-box small { font-size: 10px; color: #8b949e; display: block; font-weight: bold; }
+        .stat-box span { font-family: 'Orbitron'; font-size: 14px; color: var(--neon-blue); }
+
+        /* Sayfalar */
+        .page { display: none; flex-direction: column; align-items: center; height: 78vh; overflow-y: auto; padding: 20px; box-sizing: border-box; }
         .active { display: flex; }
-        #score { font-family: 'Orbitron'; font-size: 45px; color: #00f2ff; margin: 20px 0; text-shadow: 0 0 15px #00f2ff; }
-        .brain { width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, #1a103d, #05070a); border: 3px solid #7000ff; font-size: 70px; cursor: pointer; box-shadow: 0 0 20px #7000ff; transition: 0.1s; }
-        .brain:active { transform: scale(0.9); }
-        .card { width: 90%; background: #0d1117; border: 1px solid #1a2236; border-radius: 12px; padding: 15px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; }
-        .btn { background: #00f2ff; color: #000; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #0d1117; border-top: 1px solid #1a2236; padding: 15px 0; }
-        .nav-item { flex: 1; font-size: 11px; font-weight: bold; color: #4b5563; cursor: pointer; }
-        .nav-item.active-nav { color: #00f2ff; }
+
+        /* Ana Tıklama Ekranı */
+        #score-display { font-family: 'Orbitron'; font-size: 48px; font-weight: bold; margin: 30px 0; text-shadow: 0 0 20px var(--neon-blue); }
+        .brain-container { position: relative; }
+        .brain { width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, #1a103d, #05070a); border: 4px solid var(--neon-purple); display: flex; align-items: center; justify-content: center; font-size: 85px; cursor: pointer; box-shadow: 0 0 30px rgba(112, 0, 255, 0.3); transition: transform 0.1s; }
+        .brain:active { transform: scale(0.92); }
+
+        /* Uçuşan Puan Animasyonu */
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-120px); opacity: 0; }
+        }
+        .floating-text { position: fixed; font-family: 'Orbitron'; font-weight: bold; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 1000; }
+
+        /* Kartlar & Market */
+        .card { width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid #1a2236; border-radius: 15px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--neon-blue); }
+        .card-info b { font-size: 18px; color: var(--neon-blue); display: block; }
+        .card-info span { font-size: 13px; color: #94a3b8; }
+        .buy-btn { background: var(--neon-blue); color: #000; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; font-family: 'Rajdhani'; }
+
+        /* Alt Navigasyon */
+        .navbar { position: fixed; bottom: 0; width: 100%; background: #0d1117; display: flex; padding: 15px 0; border-top: 1px solid #1a2236; }
+        .nav-item { flex: 1; text-align: center; color: #4b5563; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .nav-item.active { color: var(--neon-blue); text-shadow: 0 0 8px var(--neon-blue); }
+
+        /* Modal (Offline Kazanç) */
+        #offline-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: #0d1117; padding: 30px; border-radius: 20px; border: 2px solid var(--neon-gold); text-align: center; width: 80%; }
     </style>
 </head>
 <body>
 
+    <div id="offline-modal">
+        <div class="modal-content">
+            <h2 style="color:var(--neon-gold); font-family:Orbitron;">HOŞ GELDİN!</h2>
+            <p id="offline-text">Sen yokken MacBook'un senin için çalıştı.</p>
+            <button class="buy-btn" style="background:var(--neon-gold); width:100%;" onclick="closeModal()">MB'LARI TOPLA</button>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="stat-box"><small>TIK GÜCÜ</small><span id="tap-ui">+1</span></div>
+        <div class="stat-box"><small>PASİF GELİR</small><span id="pas-ui">0/s</span></div>
+    </div>
+
     <div id="home" class="page active">
-        <div id="score">0</div>
-        <button class="brain" onclick="tap()">🧠</button>
-        <button onclick="spin()" style="margin-top:20px; padding:12px; background:gold; border:none; border-radius:10px; font-weight:bold; width:80%;">🎡 ŞANSLI ÇARK</button>
-        <p id="status" style="font-size:10px; color:#4b5563; margin-top:10px;">Sunucu Bekleniyor...</p>
+        <div id="score-display">0</div>
+        <div class="brain-container">
+            <div class="brain" onclick="handleTap(event)">🧠</div>
+        </div>
+        <button onclick="spin()" style="margin-top:25px; background:var(--neon-gold); border:none; padding:12px 30px; border-radius:12px; font-weight:bold; font-family:'Orbitron'; cursor:pointer;">🎡 ŞANSLI ÇARK</button>
+        <div id="sync-status" style="margin-top:15px; font-size:10px; color:#4b5563;">MacBook Cloud Senkronize Ediliyor...</div>
     </div>
 
     <div id="market" class="page">
-        <h2 style="font-family:Orbitron; color:#00f2ff">MARKET</h2>
-        <div class="card"><div><b>RTX 5090</b><br><small>+5 Tık Gücü</small></div><button class="btn" onclick="buy('tap', 5000, 5)">5K</button></div>
-        <div class="card"><div><b>AI Sunucu</b><br><small>+50/sn Gelir</small></div><button class="btn" onclick="buy('pas', 20000, 50)">20K</button></div>
-        <div class="card"><div><b>Kuantum Veri Merkezi</b><br><small>+250/sn Gelir</small></div><button class="btn" onclick="buy('pas', 100000, 250)">100K</button></div>
+        <h2 style="font-family:Orbitron; color:var(--neon-blue)">YÜKSELTMELER</h2>
+        <div class="card">
+            <div class="card-info"><b>RTX 5090 GPU</b><span>+5 Tık Gücü</span></div>
+            <button class="buy-btn" onclick="buy('tap', 5000, 5)">5.000 MB</button>
+        </div>
+        <div class="card" style="border-left-color:var(--neon-purple)">
+            <div class="card-info"><b>AI Sunucu Odası</b><span>+50 MB / Saniye</span></div>
+            <button class="buy-btn" onclick="buy('pas', 25000, 50)">25.000 MB</button>
+        </div>
+        <div class="card" style="border-left-color:var(--neon-gold)">
+            <div class="card-info"><b>Kuantum Çiftliği</b><span>+300 MB / Saniye</span></div>
+            <button class="buy-btn" onclick="buy('pas', 150000, 300)">150.000 MB</button>
+        </div>
     </div>
 
     <div id="rank" class="page">
-        <h2 style="font-family:Orbitron; color:#00f2ff">GLOBAL LİDERLER</h2>
-        <div id="rank-list" style="width:100%">Yükleniyor...</div>
+        <h2 style="font-family:Orbitron; color:var(--neon-blue)">GLOBAL LİDERLER</h2>
+        <div id="rank-list" style="width:100%"></div>
     </div>
 
-    <div class="nav">
-        <div id="n-home" class="nav-item active-nav" onclick="show('home')">ANA SAYFA</div>
-        <div id="n-market" class="nav-item" onclick="show('market')">MARKET</div>
-        <div id="n-rank" class="nav-item" onclick="show('rank')">SIRALAMA</div>
+    <div class="navbar">
+        <div class="nav-item active" onclick="showPage('home', this)">ANA SAYFA</div>
+        <div class="nav-item" onclick="showPage('market', this)">MARKET</div>
+        <div class="nav-item" onclick="showPage('rank', this)">SIRALAMA</div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
+        let user = tg.initDataUnsafe.user || { id: "000", first_name: "Boss" };
+
         // --- NGROK LİNKİNİ BURAYA YAZ ---
         const SERVER_URL = "https://epistemically-unconcealing-theda.ngrok-free.dev";
-        
+
         let score = 0, tapPower = 1, pasIncome = 0;
-        let user = tg.initDataUnsafe.user || { id: "000", first_name: "Boss" };
 
         async function init() {
             try {
-                const res = await fetch(`${SERVER_URL}/login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ user_id: user.id, username: user.first_name }) });
+                const res = await fetch(`${SERVER_URL}/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ user_id: user.id.toString(), username: user.first_name })
+                });
                 const data = await res.json();
                 score = data.score; tapPower = data.tap || 1; pasIncome = data.pas || 0;
+                
+                if(data.offline > 0) {
+                    document.getElementById('offline-text').innerText = `Sen yokken MacBook'un senin için tam ${Math.floor(data.offline).toLocaleString()} MB üretti!`;
+                    document.getElementById('offline-modal').style.display = 'flex';
+                }
                 updateUI();
-                document.getElementById('status').innerText = "✅ MacBook Bulutuna Bağlı";
-            } catch(e) { document.getElementById('status').innerText = "❌ Sunucu Hatası"; }
+                document.getElementById('sync-status').innerText = "✅ MacBook Cloud: AKTİF";
+            } catch(e) { document.getElementById('sync-status').innerText = "❌ Sunucu Bağlantı Hatası"; }
         }
 
-        function tap() { score += tapPower; updateUI(); tg.HapticFeedback.impactOccurred('medium'); }
+        function handleTap(e) {
+            score += tapPower;
+            updateUI();
+            tg.HapticFeedback.impactOccurred('medium');
+            
+            // Floating Text Efekti
+            const x = e.clientX || e.touches[0].clientX;
+            const y = e.clientY || e.touches[0].clientY;
+            const floating = document.createElement('div');
+            floating.className = 'floating-text';
+            floating.innerText = `+${tapPower}`;
+            floating.style.left = `${x}px`;
+            floating.style.top = `${y}px`;
+            floating.style.color = '#00f2ff';
+            document.body.appendChild(floating);
+            setTimeout(() => floating.remove(), 800);
+        }
 
         async function spin() {
-            const res = await fetch(`${SERVER_URL}/spin`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ user_id: user.id }) });
+            const res = await fetch(`${SERVER_URL}/spin`, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ user_id: user.id.toString() }) 
+            });
             const data = await res.json();
-            if(data.status === 'success') { tg.showAlert(`🎁 ${data.win} MB Kazandın!`); init(); }
-            else { tg.showAlert("Günde 1 kez çevirebilirsin!"); }
+            if(data.status === 'success') {
+                score = data.new_score; updateUI();
+                tg.showAlert(`🎡 Çarktan ${data.win.toLocaleString()} MB kazandın!`);
+            } else { tg.showAlert(data.message || "Günde sadece 1 kez çevirebilirsin!"); }
         }
 
         function buy(type, cost, bonus) {
-            if(score >= cost) { score -= cost; if(type==='tap') tapPower+=bonus; else pasIncome+=bonus; updateUI(); save(); }
-            else { tg.showAlert("Yetersiz Bakiye!"); }
+            if(score >= cost) {
+                score -= cost;
+                if(type === 'tap') tapPower += bonus; else pasIncome += bonus;
+                updateUI(); save();
+                tg.showAlert("Yükseltme Başarılı!");
+            } else { tg.showAlert("Yetersiz MB!"); }
         }
 
         async function loadRank() {
             const res = await fetch(`${SERVER_URL}/leaderboard`);
             const list = await res.json();
-            document.getElementById('rank-list').innerHTML = list.map((p, i) => `<div class="card"><span>#${i+1} ${p.username}</span><b>${Math.floor(p.score).toLocaleString()}</b></div>`).join('');
+            document.getElementById('rank-list').innerHTML = list.map((p, i) => `
+                <div class="card"><span>#${i+1} ${p.username}</span><b>${Math.floor(p.score).toLocaleString()}</b></div>
+            `).join('');
         }
 
-        async function save() { fetch(`${SERVER_URL}/save`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ user_id: user.id, score: score, tap: tapPower, pas: pasIncome }) }); }
+        async function save() {
+            fetch(`${SERVER_URL}/save`, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ user_id: user.id.toString(), score: score, tap: tapPower, pas: pasIncome }) 
+            });
+        }
 
-        function updateUI() { document.getElementById('score').innerText = Math.floor(score).toLocaleString(); }
+        function updateUI() {
+            document.getElementById('score-display').innerText = Math.floor(score).toLocaleString();
+            document.getElementById('tap-ui').innerText = "+" + tapPower;
+            document.getElementById('pas-ui').innerText = pasIncome + "/s";
+        }
 
-        function show(id) {
+        function showPage(id, el) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            document.getElementById('n-'+id).classList.add('active-nav');
+            el.classList.add('active');
             if(id === 'rank') loadRank();
         }
+
+        function closeModal() { document.getElementById('offline-modal').style.display = 'none'; }
 
         setInterval(() => { if(pasIncome > 0) { score += (pasIncome/10); updateUI(); } }, 100);
         setInterval(save, 15000);
