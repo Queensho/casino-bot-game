@@ -7,89 +7,74 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono&display=swap');
-        
         body { background: #05070a; color: #00f2ff; font-family: 'Roboto Mono', monospace; margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; }
-        
-        /* Üst Panel */
         #top-bar { width: 90%; display: flex; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid #1a2236; }
-        .stat-card { background: #0f172a; padding: 8px 12px; border-radius: 10px; border: 1px solid #00f2ff; text-align: center; flex: 1; margin: 0 5px; box-shadow: 0 0 10px rgba(0, 242, 255, 0.1); }
+        .stat-card { background: #0f172a; padding: 8px 12px; border-radius: 10px; border: 1px solid #00f2ff; text-align: center; flex: 1; margin: 0 5px; }
         .stat-label { font-size: 8px; color: #5c6b89; text-transform: uppercase; }
         .stat-value { font-size: 13px; font-weight: bold; color: #fff; font-family: 'Orbitron', sans-serif; }
-
-        /* Ana Alan */
-        #score-container { margin-top: 30px; text-align: center; }
+        #score-container { margin-top: 20px; text-align: center; }
         #score { font-size: 42px; font-family: 'Orbitron', sans-serif; color: #fff; text-shadow: 0 0 20px #00f2ff; }
-        
-        #ai-brain { 
-            width: 260px; height: 260px; border-radius: 50%; border: 4px solid #7000ff; 
-            margin-top: 30px; display: flex; align-items: center; justify-content: center; 
-            font-size: 110px; cursor: pointer; background: radial-gradient(circle, #1a103d, #05070a); 
-            box-shadow: 0 0 50px rgba(112, 0, 255, 0.3); transition: transform 0.05s;
-            position: relative;
-        }
+        #ai-brain { width: 240px; height: 240px; border-radius: 50%; border: 4px solid #7000ff; margin-top: 20px; display: flex; align-items: center; justify-content: center; font-size: 100px; cursor: pointer; background: radial-gradient(circle, #1a103d, #05070a); box-shadow: 0 0 40px rgba(112, 0, 255, 0.3); transition: transform 0.05s; }
         #ai-brain:active { transform: scale(0.92); }
-
-        /* Enerji Barı */
-        #energy-container { width: 85%; margin-top: 35px; }
-        .energy-text { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
+        #energy-container { width: 85%; margin-top: 25px; }
         #energy-bg { width: 100%; height: 12px; background: #1a2236; border-radius: 6px; overflow: hidden; }
         #energy-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #00f2ff, #7000ff); transition: width 0.3s; }
-
-        /* Market Paneli */
-        #shop-panel { 
-            display: none; position: fixed; bottom: 0; width: 100%; background: #0f172a; 
-            border-radius: 25px 25px 0 0; padding: 25px 0; z-index: 1000; 
-            max-height: 70vh; overflow-y: auto; border-top: 2px solid #7000ff;
-        }
-        .shop-card { 
-            background: #1e293b; margin: 10px 20px; padding: 15px; border-radius: 15px; 
-            display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155;
-        }
-        .buy-btn { background: #7000ff; color: #fff; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         
-        /* Alt Menü */
+        /* Modal Paneller */
+        .modal { display: none; position: fixed; bottom: 0; width: 100%; background: #0f172a; border-radius: 25px 25px 0 0; padding: 25px 0; z-index: 1000; border-top: 2px solid #7000ff; max-height: 70vh; overflow-y: auto; }
+        .shop-card { background: #1e293b; margin: 10px 20px; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
+        .buy-btn { background: #7000ff; color: #fff; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; }
+        
         #tab-bar { position: fixed; bottom: 0; width: 100%; display: flex; background: #05070a; border-top: 1px solid #1a2236; padding: 15px 0; }
-        .tab-item { flex: 1; text-align: center; font-size: 11px; color: #5c6b89; cursor: pointer; transition: 0.3s; }
-        .tab-item.active { color: #00f2ff; text-shadow: 0 0 10px #00f2ff; }
-
-        /* Animasyon */
-        .tap-anim { position: absolute; color: #fff; font-weight: bold; font-family: 'Orbitron'; animation: floatUp 0.6s forwards; pointer-events: none; z-index: 50; }
-        @keyframes floatUp { to { transform: translateY(-120px); opacity: 0; } }
+        .tab-item { flex: 1; text-align: center; font-size: 11px; color: #5c6b89; cursor: pointer; }
+        .tab-item.active { color: #00f2ff; }
     </style>
 </head>
 <body>
 
     <div id="top-bar">
         <div class="stat-card">
-            <span class="stat-label">İŞLEMCİ</span>
-            <span class="stat-value" id="tap-val">+1</span>
+            <span class="stat-label">SEVİYE</span>
+            <span class="stat-value" id="rank">Çaylak</span>
         </div>
         <div class="stat-card" onclick="claimDaily()">
-            <span class="stat-label">GÜNLÜK ÖDÜL</span>
+            <span class="stat-label">GÜNLÜK</span>
             <span class="stat-value">🎁 AL</span>
-        </div>
-        <div class="stat-card">
-            <span class="stat-label">OTOMATİK</span>
-            <span class="stat-value" id="passive-val">0/s</span>
         </div>
     </div>
 
     <div id="score-container">
         <div id="score">0</div>
-        <div style="font-size: 10px; letter-spacing: 2px; color: #5c6b89;">TOPLANAN VERİ (MB)</div>
+        <div style="font-size: 10px; color: #5c6b89;">TOPLANAN VERİ (MB)</div>
     </div>
 
     <div id="ai-brain" onclick="processData(event)">🧠</div>
 
     <div id="energy-container">
-        <div class="energy-text">
-            <span>⚡ ENERJİ</span>
-            <span><span id="energy-val">1000</span>/1000</span>
-        </div>
         <div id="energy-bg"><div id="energy-fill"></div></div>
+        <div style="text-align:center; font-size:12px; margin-top:5px;">⚡ <span id="energy-val">1000</span></div>
     </div>
 
-    <div id="shop-panel">
-        <h3 style="text-align: center; font-family: 'Orbitron'; margin-top: 0;">GELİŞTİRME MERKEZİ</h3>
+    <div id="shop-panel" class="modal">
+        <h3 style="text-align: center;">YÜKSELTMELER</h3>
         <div class="shop-card">
-            <div><b>Ekran Kartı (V1)</b><br><small>Tık +2 (500 MB)</small></div>
+            <div><b>GPU V1</b><br><small>Tık +2 (500 MB)</small></div>
+            <button class="buy-btn" onclick="buy('tap', 500)">YÜKSELT</button>
+        </div>
+        <button onclick="closeModals()" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 12px; border-radius: 10px;">KAPAT</button>
+    </div>
+
+    <div id="friends-panel" class="modal">
+        <h3 style="text-align: center;">EKİBİNİ KUR</h3>
+        <p style="text-align: center; font-size: 12px; padding: 0 20px;">Arkadaşlarını davet et, her arkadaşın için 50.000 MB veri kazan!</p>
+        <div class="shop-card">
+            <div id="invite-link" style="font-size: 10px; color: #00f2ff;">Link Hazırlanıyor...</div>
+            <button class="buy-btn" onclick="copyLink()">KOPYALA</button>
+        </div>
+        <button onclick="closeModals()" style="width: 90%; margin: 10px 5%; background: #334155; color: white; border: none; padding: 12px; border-radius: 10px;">KAPAT</button>
+    </div>
+
+    <div id="tab-bar">
+        <div class="tab-item active" onclick="closeModals()">💻 TERMİNAL</div>
+        <div class="tab-item" onclick="openModal('shop-panel')">🛠 MARKET</div>
+        <div class="tab-item" onclick="openModal
