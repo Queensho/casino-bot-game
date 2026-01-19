@@ -1,55 +1,87 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Casino Boss</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
-        body { background-color: #0d1117; color: #c9d1d9; font-family: 'Roboto Mono', monospace; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100vh; overflow: hidden; }
+        body { background: #0d1117; color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; }
+        #top-panel { width: 90%; display: flex; justify-content: space-between; padding: 20px 0; font-size: 24px; color: gold; font-weight: bold; }
+        #main-tap { width: 220px; height: 220px; border-radius: 50%; border: 6px solid #00c4cc; margin-top: 50px; display: flex; align-items: center; justify-content: center; font-size: 80px; cursor: pointer; background: #1a1a1a; box-shadow: 0 0 20px #00c4cc; }
+        #main-tap:active { transform: scale(0.95); }
         
-        /* Üst Panel */
-        #top-panel { width: 90%; display: flex; justify-content: space-between; padding: 20px 0; font-size: 22px; font-weight: bold; color: #ffd700; }
-
-        /* Ana Tıklama Alanı */
-        #main-tap-area { 
-            width: 240px; height: 240px; 
-            background: radial-gradient(circle, #1a1a1a 0%, #0d1117 100%); 
-            border: 6px solid #00c4cc; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; box-shadow: 0 0 25px rgba(0, 196, 204, 0.3);
-            transition: transform 0.05s;
-        }
-        #main-tap-area:active { transform: scale(0.92); }
-        #tap-icon { font-size: 80px; }
-
-        /* Alt Menü */
-        #bottom-panel { width: 100%; background-color: #161b22; padding: 15px 0; border-top: 2px solid #30363d; }
-        #menu { display: flex; width: 95%; gap: 8px; margin: 0 auto; }
-        .menu-item { flex: 1; background: #21262d; border: 1px solid #30363d; padding: 12px 5px; border-radius: 10px; text-align: center; font-size: 11px; color: white; cursor: pointer; }
-
-        /* Geliştirme Menüsü (Modal) */
-        #upgrade-modal { 
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            background: #1c2128; border: 2px solid #00c4cc; padding: 20px; border-radius: 15px; 
-            z-index: 9999; width: 80%; box-shadow: 0 0 100px rgba(0,0,0,1);
-        }
-        .upgrade-card { background: #0d1117; border: 1px solid #444; padding: 10px; border-radius: 8px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .close-btn { background: #ff4c4c; border: none; color: white; padding: 10px; border-radius: 8px; margin-top: 15px; width: 100%; cursor: pointer; }
+        /* Menü */
+        #menu { position: fixed; bottom: 0; width: 100%; display: flex; background: #161b22; padding: 15px 0; border-top: 2px solid #30363d; }
+        .menu-item { flex: 1; text-align: center; font-size: 14px; cursor: pointer; color: #8b949e; }
+        
+        /* Geliştirme Penceresi */
+        #upgrade-menu { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1c2128; border: 2px solid #00c4cc; padding: 20px; border-radius: 15px; width: 80%; z-index: 100; }
+        .buy-btn { background: #00c4cc; border: none; padding: 10px; border-radius: 5px; width: 100%; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
-
     <div id="top-panel">
-        <div>💰 <span id="score">0</span></div>
-        <div style="color: #58a6ff;">⚡ <span id="energy">100</span></div>
+        <span>💰 <span id="score">0</span></span>
+        <span style="color:#00c4cc">⚡ <span id="energy">100</span></span>
     </div>
 
-    <div id="main-tap-area" onclick="handleTap(event)">
-        <div id="tap-icon">🎰</div>
+    <div id="main-tap" onclick="tap()">🎰</div>
+
+    <div id="upgrade-menu">
+        <h3 style="margin:0">Geliştirmeler</h3>
+        <p>Tık Gücü Artır (+1)</p>
+        <button class="buy-btn" onclick="buy()">500 💰 AL</button>
+        <button onclick="toggleMenu()" style="background:red; border:none; color:white; width:100%; margin-top:10px; padding:5px; border-radius:5px;">Kapat</button>
     </div>
 
-    <div id="upgrade-modal">
-        <h3 style="margin:0; color:#00c4cc;">Geliştirmeler</h3>
-        <div class="upgrade-card" onclick
+    <div id="menu">
+        <div class="menu-item" onclick="toggleMenu()">🛠 Geliştir</div>
+        <div class="menu-item" onclick="alert('Yakında!')">👥 Arkadaşlar</div>
+        <div class="menu-item" onclick="alert('Yakında!')">🎁 Görevler</div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        let score = parseInt(localStorage.getItem('score')) || 0;
+        let energy = 100;
+        let power = 1;
+
+        function update() {
+            document.getElementById('score').innerText = score;
+            document.getElementById('energy').innerText = energy;
+        }
+
+        function tap() {
+            if (energy > 0) {
+                score += power;
+                energy--;
+                update();
+                localStorage.setItem('score', score);
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        }
+
+        function toggleMenu() {
+            let m = document.getElementById('upgrade-menu');
+            m.style.display = m.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function buy() {
+            if (score >= 500) {
+                score -= 500;
+                power++;
+                update();
+                toggleMenu();
+                tg.showAlert("Artık daha güçlüsün!");
+            } else {
+                tg.showAlert("Yetersiz bakiye!");
+            }
+        }
+
+        setInterval(() => { if (energy < 100) { energy++; update(); } }, 2000);
+        update();
+    </script>
+</body>
+</html>
