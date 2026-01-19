@@ -3,26 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Tycoon Ultimate</title>
+    <title>AI Tycoon Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-        body { background: #05070a; color: white; font-family: sans-serif; margin: 0; padding: 0; text-align: center; overflow: hidden; }
-        
-        /* Sayfa Düzeni */
-        .page { display: none; padding: 20px; height: 82vh; overflow-y: auto; flex-direction: column; align-items: center; }
+        body { background: #05070a; color: white; font-family: sans-serif; margin: 0; padding: 0; text-align: center; }
+        .page { display: none; padding: 20px; height: 80vh; overflow-y: auto; flex-direction: column; align-items: center; }
         .active { display: flex; }
-
-        /* Puan ve Buton */
-        #score { font-family: 'Orbitron'; font-size: 45px; color: #00f2ff; margin: 25px 0; text-shadow: 0 0 10px #00f2ff; }
-        .brain { width: 160px; height: 160px; border-radius: 50%; background: #1a103d; border: 3px solid #7000ff; font-size: 70px; cursor: pointer; transition: 0.1s; box-shadow: 0 0 20px #7000ff; margin-bottom: 20px; }
+        #score { font-family: 'Orbitron'; font-size: 45px; color: #00f2ff; margin: 20px 0; text-shadow: 0 0 15px #00f2ff; }
+        .brain { width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, #1a103d, #05070a); border: 3px solid #7000ff; font-size: 70px; cursor: pointer; box-shadow: 0 0 20px #7000ff; transition: 0.1s; }
         .brain:active { transform: scale(0.9); }
-
-        /* Kartlar */
         .card { width: 90%; background: #0d1117; border: 1px solid #1a2236; border-radius: 12px; padding: 15px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; }
         .btn { background: #00f2ff; color: #000; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        
-        /* Alt Menü */
         .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #0d1117; border-top: 1px solid #1a2236; padding: 15px 0; }
         .nav-item { flex: 1; font-size: 11px; font-weight: bold; color: #4b5563; cursor: pointer; }
         .nav-item.active-nav { color: #00f2ff; }
@@ -33,20 +25,20 @@
     <div id="home" class="page active">
         <div id="score">0</div>
         <button class="brain" onclick="tap()">🧠</button>
-        <button onclick="spin()" style="background:gold; color:black; border:none; padding:12px; border-radius:10px; font-weight:bold; width:80%;">🎡 ŞANSLI ÇARK</button>
-        <div id="status" style="margin-top:15px; font-size:10px; color:#4b5563;">MB Bulutuna Bağlanıyor...</div>
+        <button onclick="spin()" style="margin-top:20px; padding:12px; background:gold; border:none; border-radius:10px; font-weight:bold; width:80%;">🎡 ŞANSLI ÇARK</button>
+        <p id="status" style="font-size:10px; color:#4b5563; margin-top:10px;">Sunucu Bekleniyor...</p>
     </div>
 
     <div id="market" class="page">
-        <h2 style="font-family:Orbitron; color:#00f2ff">TEKNOLOJİ MARKETİ</h2>
+        <h2 style="font-family:Orbitron; color:#00f2ff">MARKET</h2>
         <div class="card"><div><b>RTX 5090</b><br><small>+5 Tık Gücü</small></div><button class="btn" onclick="buy('tap', 5000, 5)">5K</button></div>
-        <div class="card"><div><b>AI Sunucu</b><br><small>+50 Pasif/s</small></div><button class="btn" onclick="buy('pas', 20000, 50)">20K</button></div>
-        <div class="card"><div><b>Kuantum Çip</b><br><small>+200 Pasif/s</small></div><button class="btn" onclick="buy('pas', 100000, 200)">100K</button></div>
+        <div class="card"><div><b>AI Sunucu</b><br><small>+50/sn Gelir</small></div><button class="btn" onclick="buy('pas', 20000, 50)">20K</button></div>
+        <div class="card"><div><b>Kuantum Veri Merkezi</b><br><small>+250/sn Gelir</small></div><button class="btn" onclick="buy('pas', 100000, 250)">100K</button></div>
     </div>
 
     <div id="rank" class="page">
         <h2 style="font-family:Orbitron; color:#00f2ff">GLOBAL LİDERLER</h2>
-        <div id="rank-list" style="width:100%">MacBook'tan veriler alınıyor...</div>
+        <div id="rank-list" style="width:100%">Yükleniyor...</div>
     </div>
 
     <div class="nav">
@@ -58,88 +50,45 @@
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
-        
-        // SENİN NGROK LİNKİN
+        // --- NGROK LİNKİNİ BURAYA YAZ ---
         const SERVER_URL = "https://epistemically-unconcealing-theda.ngrok-free.dev";
-
+        
         let score = 0, tapPower = 1, pasIncome = 0;
-        let user = tg.initDataUnsafe.user || { id: "test_dev", first_name: "Boss" };
+        let user = tg.initDataUnsafe.user || { id: "000", first_name: "Boss" };
 
         async function init() {
             try {
-                const res = await fetch(`${SERVER_URL}/login`, { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({ user_id: user.id.toString(), username: user.first_name }) 
-                });
+                const res = await fetch(`${SERVER_URL}/login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ user_id: user.id, username: user.first_name }) });
                 const data = await res.json();
-                score = data.score || 0;
-                tapPower = data.tap || 1;
-                pasIncome = data.pas || 0;
+                score = data.score; tapPower = data.tap || 1; pasIncome = data.pas || 0;
                 updateUI();
-                document.getElementById('status').innerText = "✅ MacBook Cloud: AKTİF";
-            } catch(e) { document.getElementById('status').innerText = "❌ Sunucu Bağlantı Hatası"; }
+                document.getElementById('status').innerText = "✅ MacBook Bulutuna Bağlı";
+            } catch(e) { document.getElementById('status').innerText = "❌ Sunucu Hatası"; }
         }
 
-        function tap() { 
-            score += tapPower; 
-            updateUI(); 
-            tg.HapticFeedback.impactOccurred('medium'); 
-        }
+        function tap() { score += tapPower; updateUI(); tg.HapticFeedback.impactOccurred('medium'); }
 
         async function spin() {
-            try {
-                const res = await fetch(`${SERVER_URL}/spin`, { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({ user_id: user.id.toString() }) 
-                });
-                const data = await res.json();
-                if(data.status === 'success') {
-                    score = data.new_score;
-                    updateUI();
-                    tg.showAlert(`🎡 Tebrikler! ${data.win} MB kazandın!`);
-                } else { tg.showAlert("Günde sadece 1 kez çevirebilirsin!"); }
-            } catch(e) { tg.showAlert("Sunucu hatası!"); }
+            const res = await fetch(`${SERVER_URL}/spin`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ user_id: user.id }) });
+            const data = await res.json();
+            if(data.status === 'success') { tg.showAlert(`🎁 ${data.win} MB Kazandın!`); init(); }
+            else { tg.showAlert("Günde 1 kez çevirebilirsin!"); }
         }
 
         function buy(type, cost, bonus) {
-            if(score >= cost) {
-                score -= cost;
-                if(type==='tap') tapPower += bonus; else pasIncome += bonus;
-                updateUI();
-                save();
-            } else { tg.showAlert("Yetersiz MB!"); }
+            if(score >= cost) { score -= cost; if(type==='tap') tapPower+=bonus; else pasIncome+=bonus; updateUI(); save(); }
+            else { tg.showAlert("Yetersiz Bakiye!"); }
         }
 
         async function loadRank() {
-            try {
-                const res = await fetch(`${SERVER_URL}/leaderboard`);
-                const list = await res.json();
-                document.getElementById('rank-list').innerHTML = list.map((p, i) => `
-                    <div class="card"><span>#${i+1} ${p.username}</span><b>${Math.floor(p.score).toLocaleString()}</b></div>
-                `).join('');
-            } catch(e) { document.getElementById('rank-list').innerHTML = "Sıralama yüklenemedi."; }
+            const res = await fetch(`${SERVER_URL}/leaderboard`);
+            const list = await res.json();
+            document.getElementById('rank-list').innerHTML = list.map((p, i) => `<div class="card"><span>#${i+1} ${p.username}</span><b>${Math.floor(p.score).toLocaleString()}</b></div>`).join('');
         }
 
-        async function save() {
-            try {
-                await fetch(`${SERVER_URL}/save`, { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({ 
-                        user_id: user.id.toString(), 
-                        score: score, 
-                        tap: tapPower, 
-                        pas: pasIncome 
-                    }) 
-                });
-            } catch(e) {}
-        }
+        async function save() { fetch(`${SERVER_URL}/save`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ user_id: user.id, score: score, tap: tapPower, pas: pasIncome }) }); }
 
-        function updateUI() {
-            document.getElementById('score').innerText = Math.floor(score).toLocaleString();
-        }
+        function updateUI() { document.getElementById('score').innerText = Math.floor(score).toLocaleString(); }
 
         function show(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
